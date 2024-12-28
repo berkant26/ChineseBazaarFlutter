@@ -1,7 +1,8 @@
+import 'package:chinese_bazaar/presentation/widgets/categories_list_view_widget.dart';
 import 'package:flutter/material.dart';
 import '../../data/repositories/category_repository.dart';
 import '../../data/sources/category_api.dart';
-import '../widgets/category_card.dart';
+import '../widgets/category_card_widget.dart';
 import 'product_list_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -12,7 +13,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(title: const Text('')),
       body: FutureBuilder<List<String>>(
         future: repository.fetchCategories(),
         builder: (context, snapshot) {
@@ -21,25 +22,18 @@ class HomePage extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No categories found'));
+            return const Center(child: Text('Bakım zamanı '));
           }
 
           final categories = snapshot.data!;
-          return ListView.builder(
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return CategoryCard(
-                category: categories[index],
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProductListPage(category: categories[index]),
-                    ),
-                  );
-                },
-              );
-            },
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                CategoriesListView(categories: categories),
+                
+              ],
+            ),
           );
         },
       ),
