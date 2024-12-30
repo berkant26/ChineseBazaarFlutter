@@ -6,12 +6,12 @@ import 'package:http/io_client.dart';
 class ProductApi {
   late String url = "";
 
-  Future<List<Product>> fetchProductsByCategory(String category) async {
+  Future<List<Product>> fetchProductsByCategoryId(int categoryId) async {
     // Determine the correct URL based on the platform
     if (Platform.isAndroid || Platform.isIOS) {
-      url = "https://192.168.18.78:5001/api/Products?category=$category";
+      url = "https://192.168.18.78:5001/api/Products/getlistbycategoryId?categoryId=$categoryId";
     } else if (Platform.isWindows) {
-      url = "https://localhost:7037/api/Products?category=$category";
+      url =  "https://localhost:7037/api/Products/getlistbycategoryId?categoryId=$categoryId";
     }
 
     try {
@@ -34,10 +34,10 @@ class ProductApi {
         // Map JSON to Product objects and return as a list
         return data.map<Product>((product) {
           return Product(
-            id: product['id'],
-            name: product['name'],
-            price: (product['price'] as num).toDouble(),
-            imageUrl: product['imageUrl'],
+            id: product['id'] ?? 0, // Default to 0 if 'id' is null
+            name: product['name'] ?? 'Unknown', // Default to 'Unknown' if 'name' is null
+            price: (product['price'] as num?)?.toDouble() ?? 0.0, // Default to 0.0 if 'price' is null
+            imageUrl: product['imageUrl'] ?? '', // Default to an empty string if 'imageUrl' is null
           );
         }).toList();
       } else {

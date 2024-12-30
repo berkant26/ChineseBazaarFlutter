@@ -1,9 +1,8 @@
+import 'package:chinese_bazaar/domain/entities/category.dart';
 import 'package:chinese_bazaar/presentation/widgets/categories_list_view_widget.dart';
 import 'package:flutter/material.dart';
 import '../../data/repositories/category_repository.dart';
 import '../../data/sources/category_api.dart';
-import '../widgets/category_card_widget.dart';
-import 'product_list_page.dart';
 
 class HomePage extends StatelessWidget {
   final repository = CategoryRepository(CategoryApi());
@@ -14,7 +13,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('')),
-      body: FutureBuilder<List<String>>(
+      body: FutureBuilder<List<Category>>(
         future: repository.fetchCategories(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -25,7 +24,7 @@ class HomePage extends StatelessWidget {
             return const Center(child: Text('Bakım zamanı '));
           }
 
-          final categories = snapshot.data!;
+          final List<Category> categories = snapshot.data!;
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(

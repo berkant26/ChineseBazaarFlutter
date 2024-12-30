@@ -7,8 +7,9 @@ class ProductRepository implements ProductRepositoryInterface {
 
   ProductRepository(this.api);
 
+
   @override
-  Future<List<Product>> fetchProductsByCategory(String category) {
-    return api.fetchProductsByCategory(category);
+  Future<List<Product>> fetchProductsByCategoryId(int categoryId) {
+    return api.fetchProductsByCategoryId(categoryId);
   }
 }

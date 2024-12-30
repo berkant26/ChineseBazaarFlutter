@@ -3,5 +3,5 @@ const Map<String, String> categoryTranslations = {
   'Books': 'Kitaplar',
   'Clothing': 'Giyim',
   'Home': 'Ev',
-  'Accessories':'Aksesuarlar'
+  'Accessories':'Aksesuar'
 };
