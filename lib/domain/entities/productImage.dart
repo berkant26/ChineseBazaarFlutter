@@ -1,27 +1,29 @@
-class ProductImage{
-  final int Id;
-  final int  ProductId;
+class ProductImage {
+  final int id;
+  final int productId;
   final String imageUrl;
+
   ProductImage({
-    required this.Id,
+    required this.id,
+    required this.productId,
     required this.imageUrl,
-    required this.ProductId
-  }) ;
+  });
 
-Map<String,dynamic> toJson(){
-  return{
-    'Id':Id,
-    'ProductId':ProductId,
-    'ImageUrl':imageUrl,
-  };
-}
-
-  factory ProductImage.fromJson(Map<String,dynamic> json){
+  // From JSON to ProductImage
+  factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
-      Id: json['Id'] as int,
-       imageUrl: json['imageUrl'] ??'null',
-        ProductId: json['ProductId'] ?? '',);
-    
+      id: json['id'] as int,
+      productId: json['productId'] as int,
+      imageUrl: json['imageUrl'] ?? '', // Use corrected field name
+    );
   }
 
+  // Convert ProductImage to Map (to JSON)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'productId': productId,
+      'imageUrl': imageUrl,
+    };
+  }
 }

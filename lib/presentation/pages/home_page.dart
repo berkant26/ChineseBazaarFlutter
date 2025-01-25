@@ -11,26 +11,44 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('')),
+      appBar: AppBar(
+        title: Text(
+          '',
+          style: TextStyle(fontSize: screenWidth * 0.05), // Responsive font size
+        ),
+      ),
       body: FutureBuilder<List<Category>>(
         future: repository.fetchCategories(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(fontSize: screenWidth * 0.04), // Dynamic font size
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Bakım zamanı '));
+            return Center(
+              child: Text(
+                'Bakım zamanı',
+                style: TextStyle(fontSize: screenWidth * 0.04), // Dynamic font size
+              ),
+            );
           }
 
           final List<Category> categories = snapshot.data!;
           return Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(screenWidth * 0.02), // Responsive padding
             child: Column(
               children: [
                 CategoriesListView(categories: categories),
-                
+                const Center(child: Text(''),)
               ],
             ),
           );

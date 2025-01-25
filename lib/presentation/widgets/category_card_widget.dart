@@ -10,46 +10,49 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-final String translatedCategoryName = categoryTranslations[category.name] ?? category.name;
-    
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final String translatedCategoryName = 
+        categoryTranslations[category.name] ?? category.name;
+
     return SizedBox(
-      width: 100,
-      child: SingleChildScrollView( // Wrap the entire button with a scroll view
-  child: ElevatedButton(
-    onPressed: 
-      onTap
-    ,
-    style: ElevatedButton.styleFrom(
-      padding: EdgeInsets.zero, backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Make the button background transparent
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), // Optional: to give rounded corners
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal space
-      children: [
-        // Image as the button's background
-        Image.asset(
-          'assets/${category.name}.png', // Your image path
-          width: 100, // You can adjust the width and height as needed
-          height: 100,
-          fit: BoxFit.cover, // Makes the image cover the button area
-        ),
-        // Text below the image
-         Padding(
-          padding: const EdgeInsets.only(top: 8.0), // Adds space between image and text
-          child: Text(
-            translatedCategoryName, // Your category name
-            style: const TextStyle(
-              color: Colors.black, // Text color
-              fontSize: 16, // Text size
-              fontWeight: FontWeight.bold, // Optional: to make the text bold
+      width: screenWidth * 0.25, // Dynamically adjusts width based on screen size
+      child: SingleChildScrollView(
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(screenWidth * 0.02), // Responsive corner radius
             ),
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Image as the button's background
+              Image.asset(
+                'assets/${category.name}.png',
+                width: screenWidth * 0.25, // Responsive width
+                height: screenWidth * 0.25, // Responsive height
+                fit: BoxFit.cover,
+              ),
+              // Text below the image
+              Padding(
+                padding: EdgeInsets.only(top: screenWidth * 0.02), // Responsive padding
+                child: Text(
+                  translatedCategoryName,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: screenWidth * 0.04, // Responsive font size
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
-    ),
-  ),
-)
-  
+      ),
     );
   }
 }

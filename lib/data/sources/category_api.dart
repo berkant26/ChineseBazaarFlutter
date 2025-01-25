@@ -25,7 +25,7 @@ class CategoryApi {
 
       // Perform the GET request
       final result = await http.get(
-        Uri.parse(url),
+        Uri.parse("$url/getAll"),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -43,7 +43,6 @@ class CategoryApi {
       }
     } catch (error) {
       // Handle any errors
-      print("Error: $error");
       return [];
     }
   }
