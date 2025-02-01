@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/repositories/product_repository_interface.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../sources/product_api.dart';
 
@@ -15,12 +16,7 @@ class ProductRepository implements ProductRepositoryInterface {
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString('products_$categoryId');
 
-    if (cachedData != null) {
-      print('Loading products from cache');
-      // Parse and return cached data
-      final List<dynamic> jsonData = jsonDecode(cachedData);
-      return jsonData.map((data) => Product.fromJson(data)).toList();
-    }
+   
 
     print('Loading products from API');
     // Fetch from API if not cached
@@ -34,14 +30,9 @@ class ProductRepository implements ProductRepositoryInterface {
   @override
   Future<List<ProductImage>> fetchProductsImage(int productId) async {
     final prefs = await SharedPreferences.getInstance();
-    final cachedData = prefs.getString('product_images_$productId');
+    
 
-    if (cachedData != null) {
-      print('Loading product images from cache');
-      // Parse and return cached data
-      final List<dynamic> jsonData = jsonDecode(cachedData);
-      return jsonData.map((data) => ProductImage.fromJson(data)).toList();
-    }
+    
 
     print('Loading product images from API');
     // Fetch from API if not cached
@@ -53,9 +44,42 @@ class ProductRepository implements ProductRepositoryInterface {
   }
   
   @override
-  Future<bool> addProduct(Product product) async {
-    return await api.addProduct(product); // Delegate the call to the API
+  Future<ProductAddResult> addProduct(Product product) {
+    return ProductApi().addProduct(product);
   }
+  
+  @override
+  Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImages) {
+    return ProductApi().uploadProductImages(productId, selectedImages);
+  }
+  
+  @override
+  Future<ProductAddResult> updateProduct(Product product,int productId) {
+    return ProductApi().updateProduct(productId,product);
+
+  }
+  
+  @override
+  Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImages) {
+    return ProductApi().updateProductImages(productId, selectedImages);
+
+  }
+  
+  @override
+  Future<List<Product>> fetchAllProducts() {
+    return ProductApi().fetchAllProducts();
+  }
+  
+  @override
+  Future<bool> deleteProduct(int productId) {
+    return ProductApi().deleteProduct(productId);
+  }
+  
+  
+
+
+
+  
   
 }
 

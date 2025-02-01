@@ -10,7 +10,7 @@ class AddressApi {
 
   AddressApi() {
     if (Platform.isAndroid || Platform.isIOS) {
-      baseUrl = "https://192.168.18.78:5001/api";  // Replace with your server IP
+      baseUrl = "https://192.168.18.199:5001/api";  // Replace with your server IP
     } else if (Platform.isWindows) {
       baseUrl = "https://localhost:7037/api";  // Replace with your server IP
     }

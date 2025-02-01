@@ -12,7 +12,7 @@ class CategoryApi {
   Future<List<Category>> fetchCategories() async {
     // Determine the correct URL based on the platform
     if (Platform.isAndroid || Platform.isIOS) {
-      url = "https://192.168.18.78:5001/api/Categories";
+      url = "https://192.168.18.199:5001/api/Categories";
     } else if (Platform.isWindows) {
       url = "https://localhost:5001/api/Categories";
     }

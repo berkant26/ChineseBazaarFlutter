@@ -1,9 +1,12 @@
 import 'package:chinese_bazaar/data/sources/address_api.dart';
 import 'package:chinese_bazaar/presentation/pages/UserAddress.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddressDisplayPage extends StatefulWidget {
+  const AddressDisplayPage({super.key});
+
   @override
   _AddressDisplayPageState createState() => _AddressDisplayPageState();
 }
@@ -12,7 +15,7 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
   final AddressApi _addressApi = AddressApi();
   Map<String, dynamic>? _userAddress;
   bool _isLoading = true;
-
+  var logger = Logger();
   @override
   void initState() {
     super.initState();
@@ -24,7 +27,7 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
       // Retrieve userId from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
-
+      logger.d("kullanici userId = $userId");
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("User not logged in. Please log in again.")),
@@ -114,8 +117,8 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
   ),
 );
               },
-              child: Icon(Icons.add),
               tooltip: "Add Address",
+              child: Icon(Icons.add),
             )
           : null,
     );

@@ -211,7 +211,7 @@ class _CartPageState extends State<CartPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Toplam: ${totalPrice.toStringAsFixed(2)}\TL',
+                            'Toplam: ${totalPrice.toStringAsFixed(2)}TL',
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           ElevatedButton(

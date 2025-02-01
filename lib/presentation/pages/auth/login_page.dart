@@ -1,6 +1,7 @@
 import 'package:chinese_bazaar/Core/Services/auth_service.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:chinese_bazaar/presentation/pages/main_page.dart';
+import 'package:chinese_bazaar/presentation/pages/myAccountPage.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
@@ -19,13 +20,17 @@ class LoginPage extends StatelessWidget {
     final response = await authApi.login(email, password);
     if (response != null && response['token'] != null) {
   await authService.saveToken(response['token']);
-
-  Navigator.push(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const MainPage()
-  )
-    );
+  Navigator.pop(context);
+  
+  
+  Navigator.pushAndRemoveUntil(
+    context,
+    PageRouteBuilder(
+      settings: RouteSettings(name: "/myAccountPage"), // Sayfa ismini ayarla
+      pageBuilder: (context, animation, secondaryAnimation) => const MyAccountPage(),
+    ),
+    (route) => false,
+  );
 
 } else {
       ScaffoldMessenger.of(context).showSnackBar(

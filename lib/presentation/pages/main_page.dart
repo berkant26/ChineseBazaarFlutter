@@ -35,6 +35,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("MainPage built, selectedIndex: $_selectedIndex"); // Debug için
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(

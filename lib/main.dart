@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
 import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:chinese_bazaar/presentation/pages/myAccountPage.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'presentation/pages/home_page.dart';
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(
     BlocProvider(
       create: (context) => CartBloc(),
@@ -51,5 +54,12 @@ class MyApp extends StatelessWidget {
         }
       },
     );
+  }
+}
+class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
   }
 }

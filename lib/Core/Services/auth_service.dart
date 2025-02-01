@@ -3,14 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart'; // Optional if you still want to use it
 import 'package:logger/logger.dart';
 
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:logger/logger.dart';
 
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:logger/logger.dart';
 
 class AuthService {
   final logger = Logger();

@@ -5,12 +5,18 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthApi {
+  
+ static final AuthApi _instance = AuthApi._(); // Private named constructor
+  factory AuthApi() => _instance; // Singleton instance
+  AuthApi._(); // Private constructor to prevent multiple instances
+
   final logger = Logger();
   late String loginUrl;
+  String? username;
 
-  AuthApi() {
+  void initialize() {
     if (Platform.isAndroid || Platform.isIOS) {
-      loginUrl = "https://192.168.18.78:5001/api/Auth/login";
+      loginUrl = "https://192.168.18.199:5001/api/Auth/login";
     } else if (Platform.isWindows) {
       loginUrl = "https://localhost:7037/api/Auth/login";
     }
@@ -111,6 +117,15 @@ Map<String, dynamic>? _extractClaimsFromToken(String token) {
       logger.d("Extracted roles: $roles");
     } else {
       logger.e("Roles field is not a list in the token payload.");
+    } 
+    // Extract username
+    final usernameKey = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+    username = payloadMap[usernameKey];
+     logger.d("kullanici adi $username");
+    if (username != null) {
+      logger.d("Extracted username: $username");
+    } else {
+      logger.e("Username field not found in the token payload.");
     }
 
     return payloadMap;
@@ -166,7 +181,7 @@ Future<bool> canAddProduct() async {
 }
 
 
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
@@ -183,5 +198,8 @@ Future<bool> canAddProduct() async {
     await prefs.remove('token');
     await prefs.remove('userId'); // Remove userId
     logger.d("Token and userId removed from SharedPreferences");
+  }
+   String? getUserName(){
+    return username;
   }
 }

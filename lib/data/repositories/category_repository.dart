@@ -15,13 +15,7 @@ class CategoryRepository {
     final prefs = await SharedPreferences.getInstance();
 
     // Try to get cached data from SharedPreferences
-    final cachedData = prefs.getString(_cachedCategoriesKey);
-    if (cachedData != null) {
-      print('Loading from cache');
-      // If data exists, parse it and return as a List of Category
-      final List<dynamic> jsonList = json.decode(cachedData);
-      return jsonList.map((e) => Category.fromJson(e)).toList();
-    }
+    
 
     // If no cached data, fetch from API
     try {
