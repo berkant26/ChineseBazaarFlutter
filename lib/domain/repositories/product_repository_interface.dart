@@ -12,6 +12,8 @@ abstract class ProductRepositoryInterface {
   Future<ProductAddResult> addProduct(Product product);
    Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImages);
   Future<ProductAddResult> updateProduct(Product product,int productId);
-  Future<bool> deleteProduct(int productId);
+  Future<bool> deleteProduct(Product product);
+  Future<bool> deleteProductImages(List<ProductImage> productImage);
+
 }
 

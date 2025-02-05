@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
@@ -5,7 +6,6 @@ import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/io_client.dart';
-import 'package:logger/logger.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -21,7 +21,6 @@ class ProductApi {
   late String productCategoryUrl = "";
   late String productImageUrl = "";
   late String baseUrl = "https://192.168.18.199:5001/api/Products";
-var logger = Logger();
 
   var baseImgUrl = 'http://192.168.18.199:5000/';
 
@@ -35,11 +34,9 @@ Future<ProductAddResult> addProduct(Product product) async {
   try {
     final token = await AuthApi.getToken();
     if (token == null) {
-      print("Token not found");
       return ProductAddResult(success: false);
     }
 
-    logger.d("Token: $token");
 
     final httpClient = HttpClient();
     httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
@@ -62,14 +59,11 @@ Future<ProductAddResult> addProduct(Product product) async {
     if (response.statusCode >= 200 && response.statusCode <= 299) {
        final Map<String, dynamic> responseData = jsonDecode(responseBody);
       final productId = responseData['productId'];
-      print("Product added successfully. Product ID: $productId");
       return ProductAddResult(success: true,productId: productId);
     } else {
-      print("Failed to add product. Status Code: ${response.statusCode}, Response: $responseBody");
       return ProductAddResult(success: false);
     }
   } catch (e) {
-    print("Error adding product: $e");
     return ProductAddResult(success: false);
   }
 }
@@ -97,7 +91,6 @@ Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImage
 
   for (var file in selectedImages) {
     if (file.size > maxFileSize) {
-      print('File ${file.name} exceeds the maximum file size of 5MB');
       continue;
     }
 
@@ -118,13 +111,12 @@ Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImage
   var response = await request.send();
 
   if (response.statusCode == 200) {
-    print("✅ Upload successful!");
     return true;
   } else {
-    print("❌ Upload failed! Status Code: ${response.statusCode}");
     return false;
   }
   } 
+  
 Future<ProductAddResult> updateProduct(int productId, Product product) async {
   
   if (Platform.isAndroid || Platform.isIOS) {
@@ -136,11 +128,9 @@ Future<ProductAddResult> updateProduct(int productId, Product product) async {
   try {
     final token = await AuthApi.getToken();
     if (token == null) {
-      print("Token not found");
       return ProductAddResult(success: false);
     }
 
-    logger.d("Token: $token");
 
     final httpClient = HttpClient();
     httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
@@ -158,16 +148,13 @@ Future<ProductAddResult> updateProduct(int productId, Product product) async {
     if (response.statusCode >= 200 && response.statusCode <= 299) {
       final Map<String, dynamic> responseData = jsonDecode(responseBody);
       final productId = responseData['productId'];
-      print("✅ Product updated successfully");
             return ProductAddResult(success: true, productId: productId);
 
     } else {
-      print("❌ Failed to update product. Status Code: ${response.statusCode}, Response: $responseBody");
             return ProductAddResult(success: false);
 
     }
   } catch (e) {
-    print("❌ Error updating product: $e");
           return ProductAddResult(success: false);
 
   }
@@ -193,7 +180,6 @@ Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImage
 
   for (var file in selectedImages) {
     if (file.size > maxFileSize) {
-      print('❌ File ${file.name} exceeds the maximum file size of 5MB');
       continue;
     }
 
@@ -214,10 +200,8 @@ Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImage
   var response = await request.send();
 
   if (response.statusCode == 200) {
-    print("✅ Images updated successfully!");
     return true;
   } else {
-    print("❌ Image update failed! Status Code: ${response.statusCode}");
     return false;
   }
 }
@@ -245,7 +229,6 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
       if (response.statusCode >= 200 && response.statusCode <= 299) {
         // Decode the JSON response
         final List<dynamic> data = json.decode(response.body);
-        logger.d('API Response: $data'); 
         // Map JSON to Product objects and return as a list
         return data.map<ProductImage>((productImage) {
           return ProductImage(
@@ -262,10 +245,6 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
       return [];
     }
   }
-
-
-
-
 
   Future<List<Product>> fetchProductsByCategoryId(int categoryId) async {
     // Determine the correct URL based on the platform
@@ -340,7 +319,6 @@ Future<List<Product>> fetchAllProducts() async {
       if (response.statusCode >= 200 && response.statusCode <= 299) {
         // Decode the JSON response
         final List<dynamic> data = json.decode(response.body);
-          logger.d("fetched products = ${response.body}");
         // Map JSON to Product objects and return as a list
         return data.map<Product>((product) {
           return Product(
@@ -356,7 +334,6 @@ Future<List<Product>> fetchAllProducts() async {
         }).toList();
       } else {
         throw Exception("Failed to load products: ${response.statusCode}");
-          logger.d("fetched products = ${response.body}");
 
       }
     } catch (error) {
@@ -369,25 +346,52 @@ Future<List<Product>> fetchAllProducts() async {
 
   // Update an existing product
   
+  Future<bool> deleteProductImage(List<ProductImage> productImage) async {
 
+  try {
+    final ioc = HttpClient();
+    ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+
+    final request = await ioc.postUrl(
+      Uri.parse("$baseUrl/deleteProductImage"),
+    );
+
+    request.headers.set('Content-Type', 'application/json');
+    request.write(jsonEncode(productImage));
+    final response = await request.close();
+
+    if (response.statusCode >= 200 && response.statusCode <= 299) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
+
+ 
   // Delete a product
-  Future<bool> deleteProduct(int productId) async {
+  Future<bool> deleteProduct(Product product) async {
     try {
       final ioc = HttpClient();
       ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-      final http = IOClient(ioc);
-      final response = await http.delete(
-        Uri.parse("$baseUrl/delete/$productId"),
-        headers: {'Content-Type': 'application/json'},
+      final httpClient = HttpClient();
+
+      final requiest = await ioc.postUrl(
+        Uri.parse("$baseUrl/delete"),     
       );
+
+      requiest.headers.set('Content-Type', 'application/json');
+      requiest.write(jsonEncode(product));
+      final response = await requiest.close();
+
       return response.statusCode >= 200 && response.statusCode <= 299;
     } catch (error) {
-      logger.e("Error deleting product: $error");
       return false;
     }
   }
-
-  fetchCategories() {}
+   
 }
 
 

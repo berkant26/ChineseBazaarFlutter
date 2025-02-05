@@ -34,7 +34,7 @@ class LoginPage extends StatelessWidget {
 
 } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed! Please try again.')),
+        const SnackBar(content: Text('Email ve Şifreni Kontrol Et')),
       );
     }
   }

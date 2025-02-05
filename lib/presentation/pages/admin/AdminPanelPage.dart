@@ -20,7 +20,7 @@ class AdminPanelPage extends StatelessWidget {
                 // Navigate to the Product Add Page
                 Navigator.push(
                   context,
-                  PageRouteBuilder(pageBuilder: (context,animation,secondaryAnimation) => const ProductAddPage()),
+                  PageRouteBuilder(pageBuilder: (context,animation,secondaryAnimation) => const ProductAddPage(modalTitle: "Ürün Ekle",)),
                 );
               },
               child: const Text('Ürün Ekle'),

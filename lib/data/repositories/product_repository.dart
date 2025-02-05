@@ -18,7 +18,6 @@ class ProductRepository implements ProductRepositoryInterface {
 
    
 
-    print('Loading products from API');
     // Fetch from API if not cached
     final products = await api.fetchProductsByCategoryId(categoryId);
     // Cache the fetched data
@@ -34,7 +33,6 @@ class ProductRepository implements ProductRepositoryInterface {
 
     
 
-    print('Loading product images from API');
     // Fetch from API if not cached
     final images = await api.fetchProductsImages(productId);
     // Cache the fetched data
@@ -71,8 +69,14 @@ class ProductRepository implements ProductRepositoryInterface {
   }
   
   @override
-  Future<bool> deleteProduct(int productId) {
-    return ProductApi().deleteProduct(productId);
+  Future<bool> deleteProduct(Product product) {
+    return ProductApi().deleteProduct(product);
+  }
+  
+  @override
+  Future<bool> deleteProductImages(List<ProductImage> productImage) {
+        return ProductApi().deleteProductImage(productImage);
+
   }
   
   

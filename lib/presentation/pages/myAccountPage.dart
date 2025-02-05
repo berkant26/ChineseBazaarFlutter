@@ -70,7 +70,7 @@ Widget build(BuildContext context) {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterPage()),
+                       PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => RegisterPage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -143,7 +143,7 @@ Widget build(BuildContext context) {
                   ),
                   const SizedBox(height: 10),
                   if (adminSnapshot.hasData && adminSnapshot.data!)
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -152,11 +152,12 @@ Widget build(BuildContext context) {
                           ),
                         );
                       },
+                      icon: const Icon(Icons.admin_panel_settings),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15.0),
                         minimumSize: const Size(double.infinity, 50),
                       ),
-                      child: const Text("Admin Panel"),
+                      label: const Text("Yönetici Paneli",style: TextStyle(color: Colors.red),),
                     ),
                 ],
               ),

@@ -29,15 +29,12 @@ class AddressApi {
       );
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        logger.d('Cities fetched successfully: ${response.body}');
         final responseData = json.decode(response.body);
         return List<Map<String, dynamic>>.from(responseData);
       } else {
-        logger.e('Failed to fetch cities: ${response.body}');
         throw Exception("Failed to fetch cities: ${response.statusCode}");
       }
     } catch (e) {
-      logger.e("Error: $e");
       return [];
     }
   }
@@ -55,15 +52,12 @@ class AddressApi {
       );
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        logger.d('Districts fetched successfully: ${response.body}');
         final responseData = json.decode(response.body);
         return List<Map<String, dynamic>>.from(responseData);
       } else {
-        logger.e('Failed to fetch districts: ${response.body}');
         throw Exception("Failed to fetch districts: ${response.statusCode}");
       }
     } catch (e) {
-      logger.e("Error: $e");
       return [];
     }
   }
@@ -81,15 +75,12 @@ class AddressApi {
       );
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        logger.d('Neighborhoods fetched successfully: ${response.body}');
         final responseData = json.decode(response.body);
         return List<Map<String, dynamic>>.from(responseData);
       } else {
-        logger.e('Failed to fetch neighborhoods: ${response.body}');
         throw Exception("Failed to fetch neighborhoods: ${response.statusCode}");
       }
     } catch (e) {
-      logger.e("Error: $e");
       return [];
     }
   }
@@ -108,14 +99,11 @@ class AddressApi {
     );
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      logger.d('Kayıt başarılı: ${response.body}');
       return true;
     } else {
-      logger.e('Kayıt başarısız: ${response.body}');
       return false;
     }
   } catch (e) {
-    logger.e("Error saving user address: $e");
     return false;
   }
 
@@ -135,14 +123,11 @@ Future<bool> updateUserAddress(Map<String, dynamic> userAddress) async {
     );
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      logger.d("User address updated successfully: ${response.body}");
       return true;
     } else {
-      logger.e("Failed to update user address: ${response.body}");
       return false;
     }
   } catch (e) {
-    logger.e("Error updating user address: $e");
     return false;
   }
 }
@@ -162,14 +147,11 @@ Future<Map<String, dynamic>?> getUserAddress(int? userId) async {
     );
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      logger.d("User address fetched successfully: ${response.body}");
       return json.decode(response.body);
     } else {
-      logger.e("Failed to fetch user address: ${response.body}");
       return null;
     }
   } catch (e) {
-    logger.e("Error fetching user address: $e");
     return null;
   }
 }

@@ -12,11 +12,15 @@ class AuthApi {
 
   final logger = Logger();
   late String loginUrl;
+  late String registerUrl;
+
   String? username;
 
   void initialize() {
     if (Platform.isAndroid || Platform.isIOS) {
       loginUrl = "https://192.168.18.199:5001/api/Auth/login";
+      registerUrl = "https://192.168.18.199:5001/api/Auth/register";
+
     } else if (Platform.isWindows) {
       loginUrl = "https://localhost:7037/api/Auth/login";
     }
@@ -35,7 +39,6 @@ class AuthApi {
       );
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        logger.d('Login Successful: ${response.body}');
         final responseData = json.decode(response.body);
 
         // Save token and extract userId
@@ -44,32 +47,56 @@ class AuthApi {
         final tokenClaims = _extractClaimsFromToken(token);
         if (tokenClaims != null) {
           final roles = tokenClaims['roles'];
-          logger.d("User roles: $roles");
 
         }
         if (userId != null) {
           await _saveLoginDetails(token, userId);
-          logger.d("UserId extracted and saved: $userId");
         } else {
-          logger.e("Failed to extract userId from token.");
         }
 
         return responseData;
       } else {
-        logger.e('Login Failed: ${response.body}');
         throw Exception("Login failed: ${response.statusCode}");
       }
     } catch (e) {
-      logger.e("Error: $e");
       return null;
     }
   }
+Future<Map<String, dynamic>?> register(String email, String password) async {
+  try {
+    final ioc = HttpClient();
+    ioc.badCertificateCallback = (cert, host, port) => true;
+    final http = IOClient(ioc);
+
+    final response = await http.post(
+      Uri.parse(registerUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password, 'firstName': "", 'lastName': ""}),
+    );
+
+
+    if (response.statusCode >= 200 && response.statusCode <= 299) {
+      return json.decode(response.body);
+    } else {
+      // 📌 JSON formatında değilse düz metin döndürüyor olabilir
+      try {
+        return json.decode(response.body);
+      } catch (e) {
+        return {"message": response.body}; // Düz metin döndürdüyse JSON formatına sok
+      }
+    }
+  } catch (e) {
+    return null;
+  }
+}
+
+
+
 
   Future<void> _saveLoginDetails(String token, int userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
     await prefs.setInt('userId', userId);
-    logger.d("Login details saved: token=$token, userId=$userId");
   }
 
  
@@ -93,7 +120,6 @@ class AuthApi {
       throw Exception("nameid field is missing in token payload.");
     }
   } catch (e) {
-    logger.e("Failed to extract userId from token: $e");
     return null;
   }
 }
@@ -114,30 +140,23 @@ Map<String, dynamic>? _extractClaimsFromToken(String token) {
     final roles = payloadMap[roleKey];
 
     if (roles is List<dynamic>) {
-      logger.d("Extracted roles: $roles");
     } else {
-      logger.e("Roles field is not a list in the token payload.");
     } 
     // Extract username
     final usernameKey = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
     username = payloadMap[usernameKey];
-     logger.d("kullanici adi $username");
     if (username != null) {
-      logger.d("Extracted username: $username");
     } else {
-      logger.e("Username field not found in the token payload.");
     }
 
     return payloadMap;
   } catch (e) {
-    logger.e("Failed to extract claims from token: $e");
     return null;
   }
 }
  bool isAdmin(String token) {
   final claims = _extractClaimsFromToken(token);
   if (claims == null) {
-    logger.e("Failed to extract claims for isAdmin check.");
     return false;
   }
 
@@ -145,10 +164,8 @@ Map<String, dynamic>? _extractClaimsFromToken(String token) {
   final roles = claims[roleKey];
 
   if (roles is List<dynamic>) {
-    logger.d("User roles: $roles");
     return roles.contains('Admin');
   } else {
-    logger.e("Roles field is missing or not a list in the token payload.");
     return false;
   }
 }
@@ -156,13 +173,11 @@ Map<String, dynamic>? _extractClaimsFromToken(String token) {
 Future<bool> canAddProduct() async {
   final token = await getToken();
   if (token == null) {
-    logger.e("Token is null in canAddProduct.");
     return false;
   }
 
   final claims = _extractClaimsFromToken(token);
   if (claims == null) {
-    logger.e("Failed to extract claims for canAddProduct check.");
     return false;
   }
 
@@ -172,10 +187,8 @@ Future<bool> canAddProduct() async {
   if (roles is List<dynamic>) {
     final hasAdminRole = roles.contains('Admin');
     final hasProductAddClaim = roles.contains('Product.Add');
-    logger.d("User has admin role: $hasAdminRole, has Product.Add claim: $hasProductAddClaim");
     return hasAdminRole && hasProductAddClaim;
   } else {
-    logger.e("Roles field is missing or not a list in the token payload.");
     return false;
   }
 }
@@ -189,7 +202,6 @@ Future<bool> canAddProduct() async {
   Future<int?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId');
-    logger.d("Retrieved userId from SharedPreferences: $userId");
     return userId;
   }
 
@@ -197,7 +209,6 @@ Future<bool> canAddProduct() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('userId'); // Remove userId
-    logger.d("Token and userId removed from SharedPreferences");
   }
    String? getUserName(){
     return username;

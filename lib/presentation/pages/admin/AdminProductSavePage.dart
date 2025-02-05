@@ -1,10 +1,13 @@
 
+import 'dart:typed_data';
+
 import 'package:chinese_bazaar/data/repositories/category_repository.dart';
 import 'package:chinese_bazaar/data/repositories/product_repository.dart';
 import 'package:chinese_bazaar/data/sources/category_api.dart';
 import 'package:chinese_bazaar/data/sources/product_api.dart';
 import 'package:chinese_bazaar/domain/entities/category.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
+import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -13,26 +16,32 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
 class ProductAddPage extends StatefulWidget {
-  const ProductAddPage({super.key, this.productId, this.existingProduct});
+  const ProductAddPage({super.key, this.productId, this.product,this.modalTitle,this.isProductExist});
  final int? productId; // Nullable, used for updating an existing product
-  final Product? existingProduct; // Optional existing product data
+  final Product? product; // Optional existing product data
+  final String? modalTitle;
+  final bool? isProductExist;
   @override
   State<ProductAddPage> createState() => _ProductAddPageState();
 }
 
 class _ProductAddPageState extends State<ProductAddPage> {
   final _formKey = GlobalKey<FormState>();
-  final _productNameController = TextEditingController();
-  final _productPriceController = TextEditingController();
-  final _stockAmountController = TextEditingController();
-  final _descriptionController = TextEditingController();
+
+  late TextEditingController _productNameController ;
+  late TextEditingController  _productPriceController ;
+  late  TextEditingController   _stockAmountController ;
+  late TextEditingController   _descriptionController;
   int? _selectedCategoryId;
   
   List<Category> _categories = [];
   List<PlatformFile> _selectedImages = [];
+  List<ProductImage> _productsImages = [];
+  List<PlatformFile> _productsImagesToBeUpdated = [];
+List<ProductImage> imagesToDelete = [];
+  
   PlatformFile? _coverPhoto;
   bool _isLoading = false;
-  var logger=  Logger();
  
    late ProductRepository productRepository = ProductRepository(ProductApi());
 
@@ -40,15 +49,53 @@ class _ProductAddPageState extends State<ProductAddPage> {
   void initState() {
     super.initState();
     _fetchCategories();
-    if (widget.existingProduct != null) {
-    _productNameController.text = widget.existingProduct!.name;
-    _productPriceController.text = widget.existingProduct!.price.toString();
-    _stockAmountController.text = widget.existingProduct!.stockAmount.toString();
-    _descriptionController.text = widget.existingProduct!.description;
-    _selectedCategoryId = widget.existingProduct!.categoryId;
+     _productNameController = TextEditingController(text: widget.product?.name ?? '');
+    _productPriceController = TextEditingController(text: widget.product?.price.toString() ?? '');
+    _stockAmountController = TextEditingController(text: widget.product?.stockAmount.toString() ?? '');
+    _descriptionController = TextEditingController(text: widget.product?.description ?? '');
+    _selectedCategoryId = widget.product?.categoryId;
     // Load existing images if available
+    
+    _fetchProductsImages();
+  
   }
+  
+ Future<void> _fetchProductsImages() async {
+  try {
+    if (widget.productId == null) {
+      return;
+    }
+
+    final productImagesRepository = ProductRepository(ProductApi());
+    final fetchedProductImages = await productImagesRepository.fetchProductsImage(widget.productId!);
+    _productsImages = List.from(fetchedProductImages);
+
+
+    // Burada fetchedProductImages ile işlem yapabilirsiniz, ancak _selectedImages'e eklemiyoruz.
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Failed to fetch product images: $e")),
+    );
   }
+}
+
+// Silinmesi gereken resimleri seçmek için
+void deleteImagesFromServer() {
+  if (imagesToDelete.isNotEmpty) {
+    submitDeletedImages(imagesToDelete);
+    // Silme işlemi başarılı olduğunda listeyi temizliyoruz
+    setState(() {
+      imagesToDelete.clear();
+    });
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("No images selected for deletion.")),
+    );
+  }
+}
+
+
 
   Future<void> _fetchCategories() async {
     setState(() => _isLoading = true);
@@ -66,7 +113,6 @@ class _ProductAddPageState extends State<ProductAddPage> {
       setState(() => _isLoading = false);
     }
   }
-
   Future<void> _pickImages() async {
   try {
     final result = await FilePicker.platform.pickFiles(
@@ -78,7 +124,7 @@ class _ProductAddPageState extends State<ProductAddPage> {
     if (result != null && result.files.isNotEmpty) {
       if (result.files.length <= 5) {
         setState(() {
-          _selectedImages = result.files;
+          _selectedImages = result.files;  // sorun çıkarsa kaldır 
           _coverPhoto = null;
         });
       } else {
@@ -93,9 +139,8 @@ class _ProductAddPageState extends State<ProductAddPage> {
     );
   }
 }
-
-
   Future<void> _addProduct() async {
+
    
   if (_formKey.currentState!.validate() && _selectedCategoryId != null && _selectedImages.length > 0) {
     final product = Product.create(
@@ -108,14 +153,10 @@ class _ProductAddPageState extends State<ProductAddPage> {
       imageUrl: "", // Backend'de bu alan kullanılmayabilir
     );
 
-    logger.d("description = ${product.description}");
-    logger.d("stockAmount = ${product.stockAmount}");
-    logger.d("images lenght = ${_selectedImages.length}");
 
    var successProduct = await productRepository.addProduct(product);
    var successProductImage = await productRepository.uploadProductImages(successProduct.productId!, _selectedImages);
 if (successProduct.success && successProductImage) {
-  logger.d("eklendi");
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text('Ürün eklendi')),
     
@@ -130,41 +171,80 @@ if (successProduct.success && successProductImage) {
   }
 }
 
-Future<void> _updateProduct() async {
-  if (_formKey.currentState!.validate() && _selectedCategoryId != null && _selectedImages.isNotEmpty) {
-    if (widget.productId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product ID is missing.')),
-      );
+
+Future<void> submitDeletedImages(List<ProductImage> imagesToDelete) async {
+  try {
+    // Silinmek istenen resimleri backend'e gönder
+    final deleteSuccess = await productRepository.deleteProductImages(imagesToDelete);
+    if (!deleteSuccess) {
       return;
     }
 
-    final updatedProduct = Product.create(
-      id: widget.productId!,  // Ensure productId is passed correctly
-      name: _productNameController.text,
-      price: double.tryParse(_productPriceController.text) ?? 0.0,
-      categoryId: _selectedCategoryId!,
-      stockAmount: int.tryParse(_stockAmountController.text) ?? 0,
-      description: _descriptionController.text,
-      imageUrl: ""
-    );
-
-    var productResult = await productRepository.updateProduct(updatedProduct,widget.productId!);
-    var productImagesResult = await productRepository.updateProductImages(productResult.productId!, _selectedImages);
-    
-    if (productResult.success && productImagesResult) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product updated successfully!')),
-      );
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update product.')),
-      );
-    }
+    // Başarı mesajı göster
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Images deleted successfully.")));
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to delete images: $e")));
   }
 }
 
+
+
+
+Future<void> _updateProduct() async {
+ 
+  if (!_formKey.currentState!.validate() && _selectedCategoryId == null && _productsImages.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tüm alanları doldur ve Fotoğraf Seç')),
+    );
+    return;
+  }
+
+  if (imagesToDelete.isNotEmpty) { 
+    bool deleteResult = await productRepository.deleteProductImages(imagesToDelete);
+    if (!deleteResult) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete some images.')),
+      );
+      return;
+    }
+  }
+  //  resim eklenmediyse sadece silindiyse yada hiçbiri olmadıysa?
+
+  final updatedProduct = Product.create(
+    id: widget.productId!,
+    name: _productNameController.text,
+    price: double.tryParse(_productPriceController.text) ?? 0.0,
+    categoryId: _selectedCategoryId!,
+    stockAmount: int.tryParse(_stockAmountController.text) ?? 0,
+    description: _descriptionController.text,
+    imageUrl: "", // Image will be handled separately
+  );
+
+  var productUpdated = await productRepository.updateProduct(updatedProduct, widget.productId!);
+   if(imagesToDelete.isNotEmpty){
+
+        deleteImagesFromServer();
+    }
+  if(_selectedImages.length > 0)
+  {
+     
+  
+    bool imagesUploaded = await productRepository.uploadProductImages(widget.productId!, _selectedImages);
+
+  }
+
+  if (productUpdated.success) {
+  
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product updated successfully!')),
+    );
+    Navigator.pop(context);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to update product.')),
+    );
+  }
+}
 
 
 
@@ -175,7 +255,7 @@ Future<void> _updateProduct() async {
     final isLargeScreen = screenWidth > 600; // Adjust based on your screen width preference
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ürün Ekle')),
+      appBar: AppBar(title:  Text(widget.modalTitle!)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -237,51 +317,106 @@ Future<void> _updateProduct() async {
                       const SizedBox(height: 10),
                       
 
-                      if (_selectedImages.isNotEmpty)
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _selectedImages
-              .map((image) => GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        // Move the tapped image to the first position
-                        _selectedImages.remove(image);
-                        _selectedImages.insert(0, image);
-                      });
-                    },
-                    
-                    child: Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        Image.file(
-                          File(image.path!),
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        ),
-                        if (_selectedImages.indexOf(image) == 0)
-                          const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
+                      Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+    // Show existing product images
+    ..._productsImages.map((productImage) {
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _productsImages.remove(productImage);
+                _productsImages.insert(0, productImage);
+              });
+            },
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Image.network(
+                  productImage.imageUrl,  // Assuming imageUrl is stored in the DB
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+                if (_productsImages.isNotEmpty && _productsImages.first == productImage)
+                  const Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Icon(Icons.star, color: Colors.amber),
+                  ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                imagesToDelete.add(productImage);
+                _productsImages.remove(productImage);
+              });
+            },
+          ),
+        ],
+      );
+    }),
+
+    // Show newly selected images
+    ..._selectedImages.map((image) {
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedImages.remove(image);
+                _selectedImages.insert(0, image);
+              });
+            },
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Image.file(
+                  File(image.path!),
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+                if (_selectedImages.isNotEmpty && _selectedImages.first == image)
+                  const Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Icon(Icons.star, color: Colors.amber),
+                  ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                _selectedImages.remove(image);
+              });
+            },
+          ),
+        ],
+      );
+    }),
+  ],
+),
         const SizedBox(height: 10),
         Center(child: Text("kapak resmi  olacak fotoğrafa tıkla")),
 ElevatedButton(
                         onPressed: _pickImages,
-                        child: const Text('Fotoğrafları Yükle'),
+                        child: const Text('Fotoğraf Yükle'),
                       ),
 
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _addProduct,
+                        onPressed: widget.isProductExist != null && widget.isProductExist! ? _updateProduct : _addProduct,
                         style: ElevatedButton.styleFrom(backgroundColor:Colors.orange,shadowColor:Colors.orangeAccent ),
-                        child: const Text('Ürünü Ekle'),
+                        child: const Text('Kaydet'),
                         
                       ),
                     ],
@@ -300,4 +435,5 @@ ElevatedButton(
     _descriptionController.dispose();
     super.dispose();
   }
+
 }

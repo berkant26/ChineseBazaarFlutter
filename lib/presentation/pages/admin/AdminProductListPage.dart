@@ -1,6 +1,7 @@
 import 'package:chinese_bazaar/data/repositories/product_repository.dart';
 import 'package:chinese_bazaar/data/sources/product_api.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
+import 'package:chinese_bazaar/presentation/pages/admin/AdminProductSavePage.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -15,7 +16,6 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
   TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
-  final logger = Logger();
 
   @override
   void initState() {
@@ -34,9 +34,7 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
       _filteredProducts = products;
     });
 
-    logger.d("Fetched products: ${products.map((p) => p.name).toList()}");
   }).catchError((error) {
-    logger.e("Error fetching products: $error");
   });
 }
 
@@ -50,7 +48,7 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
 
   
 
- Future<void> _deleteProduct(int productId) async {
+ Future<void> _deleteProduct(Product product) async {
   final confirm = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
@@ -70,16 +68,27 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
   );
 
   if (confirm == true) {
-    logger.d("silinecek ürünün id'si : ${productId} ");
-    final success = await _productRepository.deleteProduct(productId);
+    final success = await _productRepository.deleteProduct(product);
     if (success) {
       setState(() {
-        _products.removeWhere((p) => p.id == productId);
+        _products.removeWhere((p) => p.id == product.id);
       });
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Ürün başarıyla silindi"),
         backgroundColor: Colors.green,
       ));
+      Future.delayed(const Duration(milliseconds: 500), () {
+  Navigator.pushReplacement(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => AdminProductListPage(),
+      transitionDuration: Duration.zero, // Removes animation
+    ),
+  );
+});
+ 
+      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Ürün Silinirken bir hata oluştu!"),
@@ -90,16 +99,26 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
 }
 
   void _updateProduct(Product product) {
-    // Navigate to update page or handle inline update logic
-    Navigator.pushNamed(context, '/updateProduct', arguments: product)
-        .then((_) => _fetchProducts());
-  }
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ProductAddPage(product: product, productId: product?.id,modalTitle: "Ürünü Güncelle",isProductExist: true,),
+      transitionDuration: Duration.zero, // Removes animation
+    ),
+  ).then((updated) {
+    if (updated == true) {
+      _fetchProducts(); // Refresh product list if update was successful
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Ürünler(admin)"),
+        title: Text(""),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -155,7 +174,7 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteProduct(product.id),
+                      onPressed: () => _deleteProduct(product),
                     ),
                   ],
                 ),
