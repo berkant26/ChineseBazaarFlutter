@@ -74,7 +74,7 @@ class ProductDetailPage extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
               child: Text(
-                '\$${product.price.toStringAsFixed(2)}',
+                "${product.price.toStringAsFixed(2)} TL",
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,
                   color: Colors.green,

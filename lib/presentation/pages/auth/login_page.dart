@@ -27,7 +27,7 @@ class LoginPage extends StatelessWidget {
     context,
     PageRouteBuilder(
       settings: RouteSettings(name: "/myAccountPage"), // Sayfa ismini ayarla
-      pageBuilder: (context, animation, secondaryAnimation) => const MyAccountPage(),
+      pageBuilder: (context, animation, secondaryAnimation) =>  MyAccountPage(),
     ),
     (route) => false,
   );

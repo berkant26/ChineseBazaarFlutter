@@ -103,7 +103,7 @@ class _ProductCardState extends State<ProductCard> {
             Padding(
               padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
               child: Text(
-                '\$${widget.product.price.toStringAsFixed(2)}',
+                "${widget.product.price.toStringAsFixed(2)} TL",
                 style: const TextStyle(fontSize: 14, color: Color.fromARGB(255, 0, 0, 0)),
               ),
             ),

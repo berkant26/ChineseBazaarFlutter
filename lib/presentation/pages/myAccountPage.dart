@@ -3,15 +3,20 @@ import 'package:chinese_bazaar/presentation/pages/admin/AdminPanelPage.dart';
 import 'package:chinese_bazaar/presentation/pages/auth/login_page.dart';
 import 'package:chinese_bazaar/presentation/pages/displayUserAddress.dart';
 import 'package:chinese_bazaar/presentation/pages/auth/register_page.dart';
+import 'package:chinese_bazaar/presentation/pages/myOrderPage.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyAccountPage extends StatelessWidget {
   const MyAccountPage({super.key});
-
   Future<bool> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.containsKey('token');
+
+  }
+  Future<int?> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('userId');
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -115,15 +120,23 @@ Widget build(BuildContext context) {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.shopping_cart),
-                    label: const Text("Siparişlerim"),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15.0),
-                      minimumSize: const Size(double.infinity, 50),
+                       ElevatedButton.icon(
+                      onPressed: () async {
+                        final userId = await _getUserId();
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => SiparislerimPage(userId: userId), // Replace `yourUserId` with the actual user ID
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.shopping_cart),
+                      label: const Text("Siparişlerim"),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15.0),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 10),
                   ElevatedButton.icon(
                     onPressed: () {

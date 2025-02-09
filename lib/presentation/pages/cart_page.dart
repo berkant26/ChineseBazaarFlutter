@@ -1,5 +1,7 @@
 
 import 'package:chinese_bazaar/data/sources/address_api.dart';
+import 'package:chinese_bazaar/domain/entities/product.dart';
+import 'package:chinese_bazaar/presentation/pages/payment/paymentScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
@@ -17,6 +19,7 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   final AddressApi _addressApi = AddressApi();
  double totalPrice  = 0;
+ var selectedProducts;
   // Check if the user is logged in by looking for the 'token' in SharedPreferences
   Future<bool> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,14 +36,15 @@ class _CartPageState extends State<CartPage> {
 
     // if user has not adress 
     // card total price > 0 
-    if (isLoggedIn) {
-       
-      // Proceed with the checkout process
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sepet onaylanıyor..')),
-      );
+    if (isLoggedIn && totalPrice > 0 && existingAddress != null) {
+    
+       Navigator.push(
+                      context,
+                       PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => PaymentScreen(totalPrice: totalPrice,products:selectedProducts.toList())),
+                    );
+                  
     } 
-    if(totalPrice == 0 )
+    else if(totalPrice == 0 )
     {
       showDialog(context: context, builder: (context){
           return AlertDialog(
@@ -93,7 +97,7 @@ class _CartPageState extends State<CartPage> {
             return const Center(child: Text('Sepetiniz boş!'));
           } else if (state is CartUpdated) {
             final cartItems = state.cartItems;
-            final selectedProducts = state.selectedProducts;
+            selectedProducts = state.selectedProducts;
 
              totalPrice = selectedProducts.fold(
               0.0,
@@ -159,7 +163,7 @@ class _CartPageState extends State<CartPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      '\$${productTotalPrice.toStringAsFixed(2)}',
+                                      "${productTotalPrice.toStringAsFixed(2)} TL",
                                       style: const TextStyle(
                                         color: Colors.green,
                                         fontWeight: FontWeight.bold,
@@ -216,7 +220,7 @@ class _CartPageState extends State<CartPage> {
                           ),
                           ElevatedButton(
                             onPressed: _onCheckoutPressed,
-                            child: const Text('Speti Onayla'),
+                            child: const Text('Sepeti Onayla'),
                           ),
                         ],
                       ),
