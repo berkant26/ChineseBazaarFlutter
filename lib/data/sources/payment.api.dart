@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:chinese_bazaar/data/sources/order_api.dart';
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 
 class PaymentResult{
   late bool success;
@@ -37,7 +37,7 @@ class PaymentResult{
 
 class PaymentApi
 {
-  late String baseUrl = "https://192.168.18.199:5001/api/Payment/payment";
+  late String baseUrl = Connectionurl.paymentApi;
 
  Future<PaymentResult> Pay(Map<String, dynamic> paymentRequest) async {
   final httpClient = HttpClient();

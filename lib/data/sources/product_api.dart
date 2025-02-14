@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
@@ -18,18 +19,19 @@ class ProductAddResult{
 
 
 class ProductApi {
-  late String productCategoryUrl = "";
-  late String productImageUrl = "";
-  late String baseUrl = "https://192.168.18.199:5001/api/Products";
-
+  late String productAddUrl = Connectionurl.productAddApi;
+  late String productUpdateUrl = Connectionurl.updateProductApi;
+  late String fetchProductImagesUrl = Connectionurl.fetchProductImagesApi;
+  late String uploadProductImagesUrl = Connectionurl.productUploadImagesApi;
+  late String fetchAllProductsUrl = Connectionurl.fetchAllProductsApi;
+  late String deleteProductImagesUrl = Connectionurl.deleteProductImagesApi;
+  late String fetchProductCategoryByIdUrl = Connectionurl.fetchProductCategoryByIdApi;
+   late String deleteProductUrl = Connectionurl.deleteProductApi;
   var baseImgUrl = 'http://192.168.18.199:5000/';
+  
+
 
 Future<ProductAddResult> addProduct(Product product) async {
-  if (Platform.isAndroid || Platform.isIOS) {
-    baseUrl = "https://192.168.18.199:5001/api/Products/add";
-  } else if (Platform.isWindows) {
-    baseUrl = "https://localhost:7037/api/Products/add";
-  }
 
   try {
     final token = await AuthApi.getToken();
@@ -41,7 +43,7 @@ Future<ProductAddResult> addProduct(Product product) async {
     final httpClient = HttpClient();
     httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
 
-    final request = await httpClient.postUrl(Uri.parse(baseUrl));
+    final request = await httpClient.postUrl(Uri.parse(productAddUrl));
 
     // **Set headers with case preservation**
     request.headers.set('Authorization', 'Bearer $token', preserveHeaderCase: true);
@@ -69,13 +71,9 @@ Future<ProductAddResult> addProduct(Product product) async {
 }
 Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImages) async {
 
-  if (Platform.isAndroid || Platform.isIOS) {
-    baseUrl = "https://192.168.18.199:5001/api/Products/uploadImages";
-  } else if (Platform.isWindows) {
-    baseUrl = "https://localhost:7037/api/Products/uploadImages";
-  }
 
-  final uri = Uri.parse(baseUrl);
+
+  final uri = Uri.parse(uploadProductImagesUrl);
   var request = http.MultipartRequest('POST', uri);
 
   // **Doğru header ekle**
@@ -119,12 +117,9 @@ Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImage
   
 Future<ProductAddResult> updateProduct(int productId, Product product) async {
   
-  if (Platform.isAndroid || Platform.isIOS) {
-    baseUrl = "https://192.168.18.199:5001/api/Products/update/$productId";
-  } else if (Platform.isWindows) {
-    baseUrl = "https://localhost:7037/api/Products/update/$productId";
-  }
 
+    // productUpdateUrl = productUpdateUrl+"/$productId";
+final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
   try {
     final token = await AuthApi.getToken();
     if (token == null) {
@@ -135,7 +130,7 @@ Future<ProductAddResult> updateProduct(int productId, Product product) async {
     final httpClient = HttpClient();
     httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
 
-    final request = await httpClient.putUrl(Uri.parse(baseUrl));
+    final request = await httpClient.putUrl(Uri.parse(productUpdateUrlWithId));
 
     request.headers.set('Authorization', 'Bearer $token', preserveHeaderCase: true);
     request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
@@ -162,13 +157,11 @@ Future<ProductAddResult> updateProduct(int productId, Product product) async {
 
 Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImages) async {
   
-  if (Platform.isAndroid || Platform.isIOS) {
-    baseUrl = "https://192.168.18.199:5001/api/Products/updateImages/$productId";
-  } else if (Platform.isWindows) {
-    baseUrl = "https://localhost:7037/api/Products/updateImages/$productId";
-  }
+  // final String updateProductImagesApi = Connectionurl.updateProductImagesApi+"/$productId";
 
-  final uri = Uri.parse(baseUrl);
+final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$productId";
+
+  final uri = Uri.parse(updateProductImagesApi);
   var request = http.MultipartRequest('PUT', uri);
 
   request.headers.addAll({
@@ -208,11 +201,8 @@ Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImage
 
 
 Future<List<ProductImage>> fetchProductsImages(int productId) async {
-   if (Platform.isAndroid || Platform.isIOS) {
-      productImageUrl = "https://192.168.18.199:5001/api/Products/getProductImages?productId=$productId";
-    } else if (Platform.isWindows) {
-      productImageUrl =  "https://localhost:7037/api/Products/getProductImages?productId=$productId";
-    }
+ 
+    final url = "$fetchProductImagesUrl$productId";
  try {
       // Create an HTTP client that ignores certificate errors
       final ioc = HttpClient();
@@ -221,7 +211,7 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
 
       // Perform the GET request
       final response = await http.get(
-        Uri.parse(productImageUrl),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -247,13 +237,8 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
   }
 
   Future<List<Product>> fetchProductsByCategoryId(int categoryId) async {
-    // Determine the correct URL based on the platform
-    if (Platform.isAndroid || Platform.isIOS) {
-      productCategoryUrl = "https://192.168.18.199:5001/api/Products/getlistbycategoryId?categoryId=$categoryId";
-    } else if (Platform.isWindows) {
-      productCategoryUrl =  "https://localhost:7037/api/Products/getlistbycategoryId?categoryId=$categoryId";
-    }
-
+    
+     fetchProductCategoryByIdUrl = "$fetchProductCategoryByIdUrl$categoryId";
     try {
       // Create an HTTP client that ignores certificate errors
       final ioc = HttpClient();
@@ -262,7 +247,7 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
 
       // Perform the GET request
       final response = await http.get(
-        Uri.parse(productCategoryUrl),
+        Uri.parse(fetchProductCategoryByIdUrl),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -291,17 +276,13 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
       return [];
     }
   }
+
+
+
+
 Future<List<Product>> fetchAllProducts() async {
     // Determine the correct URL based on the platform
-    if(Platform.isAndroid || Platform.isIOS)
-  {
-    baseUrl = "https://192.168.18.199:5001/api/Products/getall";
-  }
-  else if(Platform.isWindows)
-  {
-    baseUrl = "https://192.168.18.199:5001/api/Products/getall";
-
-  }
+    
 
     try {
       // Create an HTTP client that ignores certificate errors
@@ -311,7 +292,7 @@ Future<List<Product>> fetchAllProducts() async {
 
       // Perform the GET request
       final response = await http.get(
-        Uri.parse(baseUrl),
+        Uri.parse(fetchAllProductsUrl),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -353,7 +334,7 @@ Future<List<Product>> fetchAllProducts() async {
     ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
 
     final request = await ioc.postUrl(
-      Uri.parse("$baseUrl/deleteProductImage"),
+      Uri.parse(deleteProductImagesUrl),
     );
 
     request.headers.set('Content-Type', 'application/json');
@@ -379,7 +360,7 @@ Future<List<Product>> fetchAllProducts() async {
       final httpClient = HttpClient();
 
       final requiest = await ioc.postUrl(
-        Uri.parse("$baseUrl/delete"),     
+        Uri.parse(deleteProductUrl),     
       );
 
       requiest.headers.set('Content-Type', 'application/json');

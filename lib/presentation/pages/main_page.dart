@@ -15,6 +15,11 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+void navigateToTab(int index) {
+  setState(() {
+    _selectedIndex = index;
+  });
+}
 
   // Define GlobalKeys for each nested navigator
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [

@@ -1,6 +1,5 @@
 import 'package:chinese_bazaar/presentation/pages/admin/AdminProductListPage.dart';
 import 'package:chinese_bazaar/presentation/pages/admin/AdminProductSavePage.dart';
-import 'package:chinese_bazaar/presentation/pages/product_list_page.dart';
 import 'package:flutter/material.dart';
 
 class AdminPanelPage extends StatelessWidget {

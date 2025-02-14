@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:http/io_client.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,19 +12,19 @@ class AuthApi {
   AuthApi._(); // Private constructor to prevent multiple instances
 
   final logger = Logger();
-  late String loginUrl;
-  late String registerUrl;
+  late String loginUrl = Connectionurl.userLoginApi;
+  late String registerUrl = Connectionurl.userRegisterApi;
 
   String? username;
 
   void initialize() {
-    if (Platform.isAndroid || Platform.isIOS) {
-      loginUrl = "https://192.168.18.199:5001/api/Auth/login";
-      registerUrl = "https://192.168.18.199:5001/api/Auth/register";
+    // if (Platform.isAndroid || Platform.isIOS) {
+    //   loginUrl = "https://192.168.18.199:5001/api/Auth/login";
+    //   registerUrl = "https://192.168.18.199:5001/api/Auth/register";
 
-    } else if (Platform.isWindows) {
-      loginUrl = "https://localhost:7037/api/Auth/login";
-    }
+    // } else if (Platform.isWindows) {
+    //   loginUrl = "https://localhost:7037/api/Auth/login";
+    // }
   }
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
@@ -74,21 +75,34 @@ Future<Map<String, dynamic>?> register(String email, String password) async {
       body: json.encode({'email': email, 'password': password, 'firstName': "", 'lastName': ""}),
     );
 
-
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      return json.decode(response.body);
-    } else {
-      // 📌 JSON formatında değilse düz metin döndürüyor olabilir
-      try {
-        return json.decode(response.body);
-      } catch (e) {
-        return {"message": response.body}; // Düz metin döndürdüyse JSON formatına sok
+      final responseBody = json.decode(response.body);
+
+      // Handle success response with successMessage
+      if (responseBody.containsKey('successMessage')) {
+        return {"successMessage": responseBody['successMessage']};
       }
+    } else {
+      final responseBody = json.decode(response.body);
+
+      // Handle error response with message or userAlreadyExist
+      if (responseBody.containsKey('message')) {
+        return {"message": responseBody['message']};
+      } else if (responseBody.containsKey('userAlreadyExist')) {
+        return {"userAlreadyExist": responseBody['userAlreadyExist']};
+      }
+
+      // If there's no recognized error key, return a general message
+      return {"message": "An unexpected error occurred."};
     }
   } catch (e) {
-    return null;
+    // Handle any network or other exceptions
+    return {"message": "An error occurred: $e"};
   }
+  return null;
 }
+
+
 
 
 
@@ -154,8 +168,9 @@ Map<String, dynamic>? _extractClaimsFromToken(String token) {
     return null;
   }
 }
- bool isAdmin(String token) {
-  final claims = _extractClaimsFromToken(token);
+ Future<bool> isAdmin() async {
+  final token = await getToken();
+  final claims = _extractClaimsFromToken(token!);
   if (claims == null) {
     return false;
   }

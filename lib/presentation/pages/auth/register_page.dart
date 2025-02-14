@@ -25,7 +25,7 @@ class _RegisterPageState extends State<RegisterPage>{
       const closeText = "Kapat";
       return AlertDialog(
         title: Text(title),
-        content: Container(
+        content: SizedBox(
           height: 200, // Set a fixed height here
           child: SingleChildScrollView(child: Text(content)),
         ),
@@ -89,16 +89,16 @@ String? _emailValidatorFunc(String? value) {
 
     const registerTitle = "Hesap Oluştur";
     var createAccountText = "Hesap Oluşturun";
-    const _labelEmail = "Email";
-    const _labelPassword = "Şifre Giriniz";
-    const _passwordValidator = "Şifre en az 6 haneli olmalı";
-    const _labelPasswordAgain = "Şifreyi Tekrar Giriniz";
+    const labelEmail = "Email";
+    const labelPassword = "Şifre Giriniz";
+    const passwordValidator = "Şifre en az 6 haneli olmalı";
+    const labelPasswordAgain = "Şifreyi Tekrar Giriniz";
     
-  const _membershipInformation = "Üyelik Sözleşmesini okudum ve kabul ediyorum.";
-    const _kvkkInformation = "Kvkk metnini okudum ve Kabul ediyorum";
-    const _kvkkInformationTitle = "KİŞİSEL VERİLERİN KORUNMASI VE İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ";
-    const _membershipInformationTitle = "ÜYELİK SÖZLEŞMESİ";
-    const _register = "Hesap oluştur";
+  const membershipInformation = "Üyelik Sözleşmesini okudum ve kabul ediyorum.";
+    const kvkkInformation = "Kvkk metnini okudum ve Kabul ediyorum";
+    const kvkkInformationTitle = "KİŞİSEL VERİLERİN KORUNMASI VE İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ";
+    const membershipInformationTitle = "ÜYELİK SÖZLEŞMESİ";
+    const register = "Hesap oluştur";
     return Scaffold(
       appBar: AppBar(
         title: const Text(registerTitle),
@@ -133,21 +133,21 @@ String? _emailValidatorFunc(String? value) {
 
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: _labelEmail,border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: labelEmail,border: OutlineInputBorder()),
                 validator: _emailValidatorFunc,
               ),
               SizedBox(height: screenHeight * 0.02),
               TextFormField(
                 controller: _passwordController,
-                 decoration: const InputDecoration(labelText: _labelPassword,
+                 decoration: const InputDecoration(labelText: labelPassword,
                  border: OutlineInputBorder()),
                  obscureText: true,
-                 validator: (value) => value!.length < 6 ? _passwordValidator : null,
+                 validator: (value) => value!.length < 6 ? passwordValidator : null,
               ),
               SizedBox(height: screenHeight * 0.02),
               TextFormField(
                 controller: _confirmPasswordController,
-                 decoration: const InputDecoration(labelText: _labelPasswordAgain,
+                 decoration: const InputDecoration(labelText: labelPasswordAgain,
                  border: OutlineInputBorder()),
                  obscureText: true,
                  
@@ -156,8 +156,8 @@ String? _emailValidatorFunc(String? value) {
               SizedBox(height: screenHeight * 0.02),
               CheckboxListTile(
                 title: GestureDetector(
-                  onTap: () => _showAgreementDialog(_kvkkInformationTitle,LegalDocuments.kvkkMetni),
-                  child: const Text(_kvkkInformation, style: TextStyle(decoration: TextDecoration.underline,color:Colors.black),
+                  onTap: () => _showAgreementDialog(kvkkInformationTitle,LegalDocuments.kvkkMetni),
+                  child: const Text(kvkkInformation, style: TextStyle(decoration: TextDecoration.underline,color:Colors.black),
                 ),
                 ),
                 value: _isKvkkChecked,
@@ -165,8 +165,8 @@ String? _emailValidatorFunc(String? value) {
               ),
               CheckboxListTile(
                 title: GestureDetector(
-                  onTap: () => _showAgreementDialog(_membershipInformationTitle,LegalDocuments.uyeSozlesmesi),
-                  child: const Text(_membershipInformation, style: TextStyle(decoration: TextDecoration.underline,color:Colors.black),
+                  onTap: () => _showAgreementDialog(membershipInformationTitle,LegalDocuments.uyeSozlesmesi),
+                  child: const Text(membershipInformation, style: TextStyle(decoration: TextDecoration.underline,color:Colors.black),
                 ),
                 ),
                 value: _isMembershipChecked,
@@ -179,35 +179,23 @@ String? _emailValidatorFunc(String? value) {
           if (_formKey.currentState!.validate()) {
             var registerApi = AuthApi();
             final response = await registerApi.register(_emailController.text, _passwordController.text);
-
-            if (response != null) {
-              String errorMessage = "Kayıt başarısız! Lütfen tekrar deneyin.";
-
-              // 📌 API response formatına göre hata mesajını çek
-              if (response.containsKey("message")) {
-                errorMessage = response["message"].toString();
-              } else if (response.containsKey("errors")) {
-                var errors = response["errors"];
-                if (errors is Map && errors.containsKey("email")) {
-                  errorMessage = errors["email"][0]; // İlk hata mesajını al
-                }
-              }
-
-              // Eğer kullanıcı zaten varsa uygun mesajı göster
-              if (errorMessage.contains("Kullanıcı Zaten Var")) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Bu e-posta ile zaten bir hesap var!")),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(errorMessage)),
-                );
-              }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Kayıt başarısız! Lütfen tekrar deneyin.")),
-              );
+            if(response != null)
+            {
+              if(response.containsKey('userAlreadyExist')){
+                String userAlreadyExist = response["userAlreadyExist"];
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userAlreadyExist)));
             }
+            else if(response.containsKey('successMessage')){
+              String successMessage = response["successMessage"];
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(successMessage)));
+                Navigator.pop(context);
+            }
+            else{
+              String errorMessage = response['message'];
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
+            }
+            }
+            
           }
         }
       : null,
@@ -219,7 +207,7 @@ String? _emailValidatorFunc(String? value) {
     ),
   ),
   child: Text(
-    _register,
+    register,
     style: TextStyle(
       fontSize: screenWidth * 0.05,
       fontWeight: FontWeight.bold,

@@ -42,7 +42,7 @@ Haklarınızı kullanmak için [e-posta adresiniz veya iletişim bilgileriniz] �
 
 6. Açık Rıza Beyanı
 Bu aydınlatma metnini okudum, kişisel verilerimin yukarıda belirtilen amaçlarla işlenmesine açık rıza gösteriyorum.
-[ ] Onaylıyorum
+
 ''';
 
   // Üyelik Sözleşmesi
@@ -85,6 +85,6 @@ Uyuşmazlıklar, öncelikle taraflar arasında çözülmeye çalışılacaktır.
 
 10. Yürürlük
 Üye, siteye üye olarak bu sözleşmenin tüm hükümlerini kabul etmiş sayılır.
-[ ] Sözleşmeyi okudum ve kabul ediyorum.
+ 
 ''';
 }

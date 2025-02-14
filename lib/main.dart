@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
 import 'package:chinese_bazaar/presentation/pages/main_page.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'presentation/pages/home_page.dart';
 void main() {
+  Connectionurl.init(baseUrl: "https://192.168.18.199:5001/api");
   AuthApi().initialize(); 
   HttpOverrides.global = MyHttpOverrides();
   runApp(

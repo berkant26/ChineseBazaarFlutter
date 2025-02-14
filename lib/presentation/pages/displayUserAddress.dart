@@ -30,7 +30,7 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
       logger.d("kullanici userId = $userId");
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("User not logged in. Please log in again.")),
+          SnackBar(content: Text("Giriş Yap")),
         );
         return;
       }
@@ -64,7 +64,7 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _userAddress == null
-              ? Center(child: Text("Kayıtlı adresiniz Yok"))
+              ? Center(child: Text("Kayıtlı adresiniz Yok. Sağ alttaki butonla ekleyebilirsin"))
               : SingleChildScrollView(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.05, // 5% of screen width
@@ -101,26 +101,35 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
                     ],
                   ),
                 ),
-      floatingActionButton: _userAddress == null
-          ? FloatingActionButton(
-              onPressed: () {
-                // Navigate to the address add page
-               Navigator.push(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const UserAddress(
-    
-    ),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child; // No transition animation
-    },
-  ),
-);
+     floatingActionButton: FutureBuilder(
+  future: Future.delayed(const Duration(seconds: 2), () {
+    return _userAddress == null;
+  }),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Container();  // Optionally, show an empty container or a loading indicator while waiting
+    } else if (snapshot.hasData && snapshot.data == true) {
+      return FloatingActionButton(
+        onPressed: () {
+          // Navigate to the address add page
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const UserAddress(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return child; // No transition animation
               },
-              tooltip: "Add Address",
-              child: Icon(Icons.add),
-            )
-          : null,
+            ),
+          );
+        },
+        tooltip: "Add Address",
+        child: const Icon(Icons.add),
+      );
+    } else {
+      return Container();  // Return an empty container if the condition is not met
+    }
+  },
+),
     );
   }
 

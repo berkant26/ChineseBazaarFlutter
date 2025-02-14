@@ -1,5 +1,6 @@
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:chinese_bazaar/presentation/pages/cart_page.dart';
+import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
@@ -81,6 +82,17 @@ class ProductDetailPage extends StatelessWidget {
                 ),
               ),
             ),
+            SizedBox(height: 5),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+              child: Text(
+                product.description,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.05,
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -92,18 +104,8 @@ class ProductDetailPage extends StatelessWidget {
             onPressed: () {
               final updatedProduct = product.copyWith(imageUrl: productImages[0].imageUrl);
               context.read<CartBloc>().add(AddToCartEvent(updatedProduct));
-             
-                        Navigator.push(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const CartPage(
-    
-    ),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child; // No transition animation
-    },
-  ),
-);
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sepete Eklendi"),duration:Duration(seconds: 1),backgroundColor: const Color.fromARGB(255, 59, 231, 65),));
                       },
             
             style: ElevatedButton.styleFrom(
@@ -115,7 +117,12 @@ class ProductDetailPage extends StatelessWidget {
             child: const Text('Sepete Ekle', style: TextStyle(color: Colors.white)),
           ),
         ),
+        
       ),
+      
     );
+    
   }
+  
 }
+

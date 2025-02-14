@@ -45,6 +45,17 @@ class SubmitCartEvent extends CartEvent {
   @override
   List<Object?> get props => [];
 }
+// Event to remove a product from the cart
+class RemoveProductEvent extends CartEvent {
+  final Product product;
+
+  RemoveProductEvent(this.product);
+
+  @override
+  List<Object?> get props => [product];
+}
+
+class ClearCartEvent extends CartEvent {}
 
 abstract class CartState extends Equatable {
   @override

@@ -36,33 +36,10 @@ class _CartPageState extends State<CartPage> {
 
     // if user has not adress 
     // card total price > 0 
-    if (isLoggedIn && totalPrice > 0 && existingAddress != null) {
-    
-       Navigator.push(
-                      context,
-                       PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => PaymentScreen(totalPrice: totalPrice,products:selectedProducts.toList())),
-                    );
-                  
-    } 
-    else if(totalPrice == 0 )
-    {
-      showDialog(context: context, builder: (context){
-          return AlertDialog(
-          title: const Text("Sepete ürün ekleyin") ,
-          content: const Text('Sepete ürün ekle')
-        );
-        });
-    }
-   else if (existingAddress == null) {
-        
-        showDialog(context: context, builder: (context){
-          return AlertDialog(
-          title: const Text("Adres ekleyin") ,
-          content: const Text('Sepeti onaylamadan önce adres bilgilerini girin')
-        );
-        });
-    }
-   else  if(!isLoggedIn){
+
+
+
+ if(!isLoggedIn){
       // Show login prompt and navigate to LoginPage
       showDialog(
         context: context,
@@ -74,15 +51,44 @@ class _CartPageState extends State<CartPage> {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
-                  Navigator.pushNamed(context, '/login'); // Navigate to LoginPage
+                  // Navigator.pushNamed(context, '/login'); // Navigate to LoginPage
                 },
-                child: const Text('Giriş Yap'),
+                child: const Text('Tamam'),
               ),
             ],
           );
         },
       );
     }
+     else if (existingAddress == null) {
+        
+        showDialog(context: context, builder: (context){
+          return AlertDialog(
+          title: const Text("Adres ekleyin") ,
+          content: const Text('Sepeti onaylamadan önce adres bilgilerini girin')
+        );
+        });
+    }
+  else if(totalPrice == 0 )
+    {
+      showDialog(context: context, builder: (context){
+          return AlertDialog(
+          title: const Text("Sepete ürün ekleyin") ,
+          content: const Text('Sepete ürün ekle')
+        );
+        });
+    }
+    else if (isLoggedIn && totalPrice > 0) {
+    
+       Navigator.push(
+          context,
+         PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => PaymentScreen(totalPrice: totalPrice,products:selectedProducts.toList())),
+            );
+                  
+    } 
+  
+  
+   
   }
 
   @override

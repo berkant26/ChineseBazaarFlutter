@@ -1,19 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:http/io_client.dart';
 import 'package:logger/logger.dart';
 
 class AddressApi {
   final logger = Logger();
-  late String baseUrl;
+  late String baseUrl = Connectionurl.connectionUrl;
 
   AddressApi() {
-    if (Platform.isAndroid || Platform.isIOS) {
-      baseUrl = "https://192.168.18.199:5001/api";  // Replace with your server IP
-    } else if (Platform.isWindows) {
-      baseUrl = "https://localhost:7037/api";  // Replace with your server IP
-    }
+    // if (Platform.isAndroid || Platform.isIOS) {
+    //   baseUrl = "https://192.168.18.199:5001/api";  // Replace with your server IP
+    // } else if (Platform.isWindows) {
+    //   baseUrl = "https://localhost:7037/api";  // Replace with your server IP
+    // }
   }
 
   // Fetch Cities without Cache

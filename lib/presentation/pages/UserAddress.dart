@@ -1,5 +1,6 @@
 import 'package:chinese_bazaar/data/sources/address_api.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserAddress extends StatefulWidget {
@@ -38,7 +39,7 @@ class _UserAddressState extends State<UserAddress> {
   _loadCities() async {
     var fetchedCities = await _addressApi.getCities();
     setState(() {
-      cities = fetchedCities;
+      cities = fetchedCities ?? [];
     });
   }
 
@@ -46,7 +47,7 @@ class _UserAddressState extends State<UserAddress> {
   _loadDistricts(int cityId) async {
     var fetchedDistricts = await _addressApi.getDistricts(cityId);
     setState(() {
-      districts = fetchedDistricts;
+      districts = fetchedDistricts ?? [];
       selectedDistrict = null;  // Reset district when city changes
       neighborhoods = [];  // Reset neighborhoods
       selectedNeighborhood = null;  // Reset neighborhood selection
@@ -62,7 +63,7 @@ class _UserAddressState extends State<UserAddress> {
     var fetchedNeighborhoods = await _addressApi.getNeighborhoods(districtId);
     
     setState(() {
-      neighborhoods = fetchedNeighborhoods;
+      neighborhoods = fetchedNeighborhoods ?? [];
       isLoading = false;  // Set loading state to false after data is fetched
     });
   }
@@ -112,7 +113,7 @@ class _UserAddressState extends State<UserAddress> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to save address. Please try again.")),
+          const SnackBar(content: Text("Bir şeyler ters gitti.")),
         );
         return;
       }
@@ -125,7 +126,7 @@ class _UserAddressState extends State<UserAddress> {
     } catch (e) {
       // Handle unexpected errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("An error occurred: $e")),
+        SnackBar(content: Text("Bir şeyler ters gitti.")),
       );
     }
   }
@@ -160,8 +161,22 @@ class _UserAddressState extends State<UserAddress> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Telefon numarası'),
                 keyboardType: TextInputType.phone,
-                validator: (value) => value!.isEmpty ? 'telefon numarası girin' : null,
+                validator: (value) {
+                  if(value == null || value.isEmpty)
+                  {
+                     return "Telefon numarası girin"; 
+                  }
+                  else if(value.length != 11)
+                  {
+                    return "Telefon numarası 11 haneli değil!";
+                  }
+                  return null;
+                },
+                
                 onSaved: (value) => phoneNumber = value,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(11)
+                ],
               ),
               const SizedBox(height: 16),
 

@@ -37,7 +37,7 @@ class _ProductAddPageState extends State<ProductAddPage> {
   List<Category> _categories = [];
   List<PlatformFile> _selectedImages = [];
   List<ProductImage> _productsImages = [];
-  List<PlatformFile> _productsImagesToBeUpdated = [];
+  final List<PlatformFile> _productsImagesToBeUpdated = [];
 List<ProductImage> imagesToDelete = [];
   
   PlatformFile? _coverPhoto;
@@ -142,7 +142,7 @@ void deleteImagesFromServer() {
   Future<void> _addProduct() async {
 
    
-  if (_formKey.currentState!.validate() && _selectedCategoryId != null && _selectedImages.length > 0) {
+  if (_formKey.currentState!.validate() && _selectedCategoryId != null && _selectedImages.isNotEmpty) {
     final product = Product.create(
       id: null,
       name: _productNameController.text,
@@ -181,9 +181,7 @@ Future<void> submitDeletedImages(List<ProductImage> imagesToDelete) async {
     }
 
     // Başarı mesajı göster
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Images deleted successfully.")));
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to delete images: $e")));
   }
 }
 
@@ -225,7 +223,7 @@ Future<void> _updateProduct() async {
 
         deleteImagesFromServer();
     }
-  if(_selectedImages.length > 0)
+  if(_selectedImages.isNotEmpty)
   {
      
   
@@ -281,7 +279,7 @@ Future<void> _updateProduct() async {
                             return 'Ürün Fiyatı Girin ';
                           }
                           if (double.tryParse(value) == null) {
-                            return 'Enter a valid price';
+                            return 'Ürün Fiyatı Girin';
                           }
                           return null;
                         },
@@ -295,7 +293,9 @@ Future<void> _updateProduct() async {
                       ),
                       TextFormField(
                         controller: _descriptionController,
-                        decoration: const InputDecoration(labelText: 'Aciklama'),
+                        decoration: const InputDecoration(labelText: 'Aciklama',hintText: "Ürüne ait kodu bu alana  girmeyi unutma!"),
+                        
+                        
                         maxLines: 3,
                         validator: (value) =>
                             value == null || value.isEmpty ? 'Ürün Açıklaması gir' : null,

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
 class AdminProductListPage extends StatefulWidget {
+  const AdminProductListPage({super.key});
+
   @override
   _AdminProductListPageState createState() => _AdminProductListPageState();
 }
@@ -13,7 +15,7 @@ class AdminProductListPage extends StatefulWidget {
 class _AdminProductListPageState extends State<AdminProductListPage> {
   late Future<List<Product>> _productsFuture;
   final ProductRepository _productRepository = ProductRepository(ProductApi());
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
 
@@ -103,7 +105,7 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
     context,
     PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          ProductAddPage(product: product, productId: product?.id,modalTitle: "Ürünü Güncelle",isProductExist: true,),
+          ProductAddPage(product: product, productId: product.id,modalTitle: "Ürünü Güncelle",isProductExist: true,),
       transitionDuration: Duration.zero, // Removes animation
     ),
   ).then((updated) {

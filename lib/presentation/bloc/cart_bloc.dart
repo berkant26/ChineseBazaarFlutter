@@ -36,6 +36,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       }
       emit(CartUpdated(Map.from(_cartItems), Set.from(_selectedProducts)));
     });
+on<RemoveProductEvent>((event, emit) {
+  if (_cartItems.containsKey(event.product)) {
+    _cartItems.remove(event.product); // Remove from cart
+    _selectedProducts.remove(event.product); // Remove from selected products
+    emit(CartUpdated(Map.from(_cartItems), Set.from(_selectedProducts)));
+  }
+});
 
     on<ToggleProductSelectionEvent>((event, emit) {
       if (_selectedProducts.contains(event.product)) {
@@ -45,6 +52,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       }
       emit(CartUpdated(Map.from(_cartItems), Set.from(_selectedProducts)));
     });
+on<ClearCartEvent>((event, emit) {
+  _cartItems.clear();
+  _selectedProducts.clear();
+  emit(CartUpdated(Map.from(_cartItems), Set.from(_selectedProducts)));
+});
 
     on<UpdateProductQuantityEvent>((event, emit) {
       if (event.quantity > 0 && event.quantity <= 5) {

@@ -1,6 +1,5 @@
 import 'package:chinese_bazaar/Core/Services/auth_service.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
-import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:chinese_bazaar/presentation/pages/myAccountPage.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +25,6 @@ class LoginPage extends StatelessWidget {
   Navigator.pushAndRemoveUntil(
     context,
     PageRouteBuilder(
-      settings: RouteSettings(name: "/myAccountPage"), // Sayfa ismini ayarla
       pageBuilder: (context, animation, secondaryAnimation) =>  MyAccountPage(),
     ),
     (route) => false,
@@ -44,12 +42,12 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Giriş Yap'),
-        backgroundColor: Colors.orange, // AppBar with orange color
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255), // AppBar with orange color
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color.fromARGB(255, 241, 221, 180), Color.fromARGB(255, 105, 77, 49)],
+            colors: [Color.fromARGB(255, 255, 255, 255), Color.fromARGB(255, 255, 255, 255)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -104,7 +102,7 @@ class LoginPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => login(context),
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 255, 153, 0), // White text color
+                  foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 235, 153, 46), // White text color
                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30), // Rounded corners
@@ -116,6 +114,7 @@ class LoginPage extends StatelessWidget {
                   style: TextStyle(fontSize: 16),
                 ),
               ),
+             TextButton(onPressed:()=> null, child:Text('Şifremi Unuttum')),
             ],
           ),
         ),

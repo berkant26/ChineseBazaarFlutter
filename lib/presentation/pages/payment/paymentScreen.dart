@@ -2,8 +2,13 @@ import 'package:chinese_bazaar/data/sources/order_api.dart';
 import 'package:chinese_bazaar/data/sources/payment.api.dart';
 import 'package:chinese_bazaar/domain/entities/Order.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
+import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
+import 'package:chinese_bazaar/presentation/bloc/cart_event.dart';
+import 'package:chinese_bazaar/presentation/pages/home_page.dart';
+import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +16,7 @@ class PaymentScreen extends StatefulWidget {
   final double totalPrice;
   final List<Product> products;
  
-  const PaymentScreen({Key? key, required this.totalPrice, required this.products}) : super(key: key);
+  const PaymentScreen({super.key, required this.totalPrice, required this.products});
   
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
@@ -73,15 +78,17 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
 
       );
        await  addOrder.addOrder(orderRequestDto);
+        
+      context.read<CartBloc>().add(ClearCartEvent());
 
-
-        log.d(paymentResult.message);
           showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Column(
               children: [
+                
+                
                 // Optional logo
                 Icon(Icons.check_circle, color: Colors.green, size: 40), 
                 SizedBox(height: 10),
@@ -97,23 +104,18 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text("OK"),
+                child: Text("Tamam"),
               ),
             ],
           );
         },
-      );
-        ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(content: Text(paymentResult.message ?? "Beklenmedik Hata"))
-      );
+      );            
+                  Navigator.of(context).pop();
 
       }
       else{
-        log.d(paymentResult.message);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(content: Text(paymentResult.message ?? "Beklenmedik Hata"))
-    );
+     
       }
       Future.delayed(const Duration(seconds: 2), () {
         setState(() => _isProcessing = false);

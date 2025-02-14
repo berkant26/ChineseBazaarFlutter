@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:chinese_bazaar/domain/entities/category.dart';
 import 'package:http/io_client.dart';
 
@@ -7,15 +8,15 @@ import 'dart:convert';
 
 class CategoryApi {
   late String response = "Not connected";
-  late String url = "";
+  late String url = Connectionurl.categoriesApi;
 
   Future<List<Category>> fetchCategories() async {
     // Determine the correct URL based on the platform
-    if (Platform.isAndroid || Platform.isIOS) {
-      url = "https://192.168.18.199:5001/api/Categories";
-    } else if (Platform.isWindows) {
-      url = "https://localhost:5001/api/Categories";
-    }
+    // if (Platform.isAndroid || Platform.isIOS) {
+    //   url = "https://192.168.18.199:5001/api/Categories";
+    // } else if (Platform.isWindows) {
+    //   url = "https://localhost:5001/api/Categories";
+    // }
 
     try {
       // Create an HTTP client that ignores certificate errors

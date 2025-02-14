@@ -3,6 +3,7 @@ import 'package:chinese_bazaar/data/sources/product_api.dart';
 import 'package:chinese_bazaar/domain/entities/category.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
+import 'package:chinese_bazaar/presentation/widgets/DiscountBanner/PromoBanner.dart';
 import 'package:chinese_bazaar/presentation/widgets/categories_list_view_widget.dart';
 import 'package:chinese_bazaar/presentation/widgets/product_card_widget.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,8 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CategoriesListView(categories: categories),
+
+                  const PromoBanner(),
                   // Displaying products here -------------------------------
                   FutureBuilder<List<Product>>(
                     future: productRepository.fetchAllProducts(),
@@ -65,7 +68,7 @@ class HomePage extends StatelessWidget {
                       } else if (snapshot.hasError) {
                         return Center(child: Text('${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text('No products available'));
+                        return const Center(child: Text(''));
                       }
 
                       final List<Product> products = snapshot.data!;
@@ -98,7 +101,7 @@ class HomePage extends StatelessWidget {
                                 } else if (!imageSnapshot.hasData || imageSnapshot.data!.isEmpty) {
                                   return SizedBox(
                                     height: 200,
-                                    child: const Center(child: Text('No images available')),
+                                    child: const Center(child: Text('')),
                                   );
                                 }
 

@@ -1,118 +1,135 @@
+import 'package:chinese_bazaar/data/sources/address_api.dart';
+import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:flutter/material.dart';
 import 'package:chinese_bazaar/data/sources/order_api.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SiparislerimPage extends StatefulWidget {
   final int? userId;
-
-  SiparislerimPage({required this.userId});
+  const SiparislerimPage({super.key, required this.userId});
 
   @override
   _SiparislerimPageState createState() => _SiparislerimPageState();
 }
 
 class _SiparislerimPageState extends State<SiparislerimPage> {
-  late Future<Map<String, dynamic>?> orders;
+  late Future<List<Map<String, dynamic>>?>? orders ;
+  final AddressApi _addressApi = AddressApi();
+  bool? isAdmin;
+  
+  Map<String, dynamic>? _userAddress;
+
+  String formatDate(String date) {
+  DateTime parsedDate = DateTime.parse(date);
+  return '${parsedDate.day.toString().padLeft(2, '0')}/${parsedDate.month.toString().padLeft(2, '0')}/${parsedDate.year}';
+}
 
   @override
   void initState() {
+    orders = null;
     super.initState();
-    orders = OrderApi().fetchOrders(widget.userId!);
+    checkAdminStatus();
+   
   }
 
+  
+
+  
+  void checkAdminStatus() async {
+    bool adminStatus = await AuthApi().isAdmin();
+    setState(() {
+      isAdmin = adminStatus;
+      orders = isAdmin! 
+          ? OrderApi().fetchAllOrders()
+          : OrderApi().fetchUserOrders(widget.userId!);
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Siparişlerim"),
       ),
-      body: FutureBuilder<Map<String, dynamic>?>(
+      body: FutureBuilder<List<Map<String, dynamic>>?>(
         future: orders,
         builder: (context, snapshot) {
-          // If the connection is waiting, show a loading indicator
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // If there's an error, log and display the error message
           if (snapshot.hasError) {
-            print('Error fetching orders: ${snapshot.error}');
-            return Center(child: Text('Error: ${snapshot.error}'));
+           return const Center(child: Text('Sipariş yok'));
           }
 
-          // If no data is available, show a message
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text('No orders found.'));
+          if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Sipariş yok'));
           }
 
-          // Extract order and orderItems from the response
-          var order = snapshot.data!['order']; // Access 'order'
-          var orderItems = snapshot.data!['orderItems']; // Access 'orderItems'
+          var ordersList = snapshot.data!;
 
-          // Check if the order or orderItems are null
-          if (order == null || orderItems == null || orderItems is! List) {
-            return const Center(child: Text('Invalid order data.'));
-          }
+          return ListView.builder(
+            itemCount: ordersList.length,
+            itemBuilder: (context, index) {
+              var orderData = ordersList[index];
+              var order = orderData['order']; // Access order
+              var orderItems = orderData['orderItems']; // Access orderItems
+              var userInfo = orderData['userAddress'];
+              if (order == null || orderItems == null || orderItems is! List) {
+                return const Center(child: Text('Bir şeyler ters gitti, Tekrar deneyin'));
+              }
 
-          // Log the order ID
-          print('Order ID: ${order['id']}');
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: ListTile(
+                  title: Text('Sipariş No #${order['id']}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tarih: ${order['orderDate'] != null ? formatDate(order['orderDate']) : 'N/A'}',
+                      ),
+                      Text('Toplam Tutar: ${order['totalPrice'] ?? 'N/A'} TL'),
+                      ...orderItems.map<Widget>((item) {
+                        if (item is Map<String, dynamic>) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('*****************'),
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * 0.05,
-                      ),
-                      title: Text(
-                        'Sipariş No #${order['id']}',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.05,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tarih: ${order['orderDate'] ?? 'N/A'}',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          Text(
-                            'Toplam Tutar ${order['totalPrice'] ?? 'N/A'} TL',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          ...orderItems.map<Widget>((item) {
-                            // Ensure item is a Map and contains required keys
-                            if (item is Map<String, dynamic>) {
-                              return Text(
-                                'Ürün: ${item['productName'] ?? 'N/A'}, Quantity: ${item['quantity'] ?? 'N/A'}, Fiyat: ${item['price'] ?? 'N/A'} TL',
-                                style: TextStyle(fontSize: 12),
-                              );
-                            } else {
-                              return Text(
-                                'Invalid item data',
-                                style: TextStyle(fontSize: 12),
-                              );
-                            }
-                          }).toList(),
-                        ],
-                      ),
-                      // trailing: Icon(
-                      //   (order['paymentStatus'] ?? false) ? Icons.check : Icons.close,
-                      //   color: (order['paymentStatus'] ?? false) ? Colors.green : Colors.red,
-                      // ),
-                    ),
+                            Text('Ürün: ${item['productName'] ?? 'N/A'}'),
+                            Text('Miktar: ${item['quantity'] ?? 'N/A'}'),
+                            Text('Fiyat: ${item['price'] ?? 'N/A'} TL'),
+                            Text('Açıklama: ${item['productDescription'] ?? 'N/A'}'),
+                          ],
+                        );
+                      }
+                      else {
+                          return const Text('Invalid item data');
+                        }
+                      }),
+                      SizedBox(height: 10,),
+                      Text(' -- Alıcı iletişim Bilgileri --'),
+                     Text('Ad: ${userInfo['firstName'] ?? 'N/A'}'),
+                     Text('Soyad: ${userInfo['lastName'] ?? 'N/A'}'),
+                     Text('il: ${userInfo['city'] ?? 'N/A'}'),
+                     Text('Ilçe: ${userInfo['district'] ?? 'N/A'}'),
+                     Text('Mahalle: ${userInfo['neighborhood'] ?? 'N/A'}'),
+                     Text('Telefon: ${userInfo['phoneNumber'] ?? 'N/A'}'),
+                    
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
     );
+    
   }
+  
+  
 }
