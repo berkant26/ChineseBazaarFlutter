@@ -357,7 +357,6 @@ Future<List<Product>> fetchAllProducts() async {
     try {
       final ioc = HttpClient();
       ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-      final httpClient = HttpClient();
 
       final requiest = await ioc.postUrl(
         Uri.parse(deleteProductUrl),     

@@ -14,7 +14,6 @@ class ProductRepository implements ProductRepositoryInterface {
   @override
   Future<List<Product>> fetchProductsByCategoryId(int categoryId) async {
     final prefs = await SharedPreferences.getInstance();
-    final cachedData = prefs.getString('products_$categoryId');
 
    
 

@@ -47,7 +47,6 @@ class AuthApi {
         final userId = _extractUserIdFromToken(token);
         final tokenClaims = _extractClaimsFromToken(token);
         if (tokenClaims != null) {
-          final roles = tokenClaims['roles'];
 
         }
         if (userId != null) {

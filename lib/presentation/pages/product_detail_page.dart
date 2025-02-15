@@ -1,6 +1,4 @@
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
-import 'package:chinese_bazaar/presentation/pages/cart_page.dart';
-import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';

@@ -21,7 +21,6 @@ class OrderApi {
     final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      print('Response Body: $responseBody');  // Log API response
 
       final List<dynamic> responseData = jsonDecode(responseBody);
 
@@ -34,7 +33,6 @@ class OrderApi {
       throw Exception('Failed to load orders: $responseBody');
     }
   } catch (e) {
-    print('Error fetching orders: $e');
     throw Exception('Error fetching orders: $e');
   }
 }
@@ -51,7 +49,6 @@ Future<List<Map<String, dynamic>>?> fetchAllOrders() async {
     final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      print('Response Body: $responseBody');  // Log API response
 
       final List<dynamic> responseData = jsonDecode(responseBody);
 
@@ -64,7 +61,6 @@ Future<List<Map<String, dynamic>>?> fetchAllOrders() async {
       throw Exception('Failed to load orders: $responseBody');
     }
   } catch (e) {
-    print('Error fetching orders: $e');
     throw Exception('Error fetching orders: $e');
   }
 }
@@ -79,12 +75,10 @@ Future<List<Map<String, dynamic>>?> fetchAllOrders() async {
 
   final response = await request.close();
 
-  final responseBody = await response.transform(utf8.decoder).join();
   
   
 
   if (response.statusCode >= 200 && response.statusCode <= 299) {
-    print('Order created successfully.');
   } else {
     throw Exception('Failed to create order: $response');
   }

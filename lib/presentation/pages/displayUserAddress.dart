@@ -76,7 +76,7 @@ class _AddressDisplayPageState extends State<AddressDisplayPage> {
                       _buildInfoRow("Ad", _userAddress!['firstName'], screenWidth),
                       _buildInfoRow("Soyad", _userAddress!['lastName'], screenWidth),
                       _buildInfoRow("Telefon", _userAddress!['phoneNumber'], screenWidth),
-                      _buildInfoRow("Adres", _userAddress!['addressDescription'], screenWidth),
+                      _buildInfoRow("Açık Adres", _userAddress!['addressDescription'], screenWidth),
                       _buildInfoRow("Şehir", _userAddress!['cityName'].toString(), screenWidth),
                       _buildInfoRow("İlçe", _userAddress!['districtName'].toString(), screenWidth),
                       _buildInfoRow("Mahalle", _userAddress!['neighborhoodName'].toString(), screenWidth),

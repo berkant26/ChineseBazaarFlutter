@@ -18,8 +18,10 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   final AddressApi _addressApi = AddressApi();
- double totalPrice  = 0;
- var selectedProducts;
+  double totalPrice = 0;
+  var selectedProducts;
+  Map<Product, int> cartItems = {}; // Sınıf seviyesinde tanımla
+
   // Check if the user is logged in by looking for the 'token' in SharedPreferences
   Future<bool> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,14 +34,8 @@ class _CartPageState extends State<CartPage> {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId');
     final existingAddress = await _addressApi.getUserAddress(userId);
-    
 
-    // if user has not adress 
-    // card total price > 0 
-
-
-
- if(!isLoggedIn){
+    if (!isLoggedIn) {
       // Show login prompt and navigate to LoginPage
       showDialog(
         context: context,
@@ -59,36 +55,38 @@ class _CartPageState extends State<CartPage> {
           );
         },
       );
-    }
-     else if (existingAddress == null) {
-        
-        showDialog(context: context, builder: (context){
+    } else if (existingAddress == null) {
+      showDialog(
+        context: context,
+        builder: (context) {
           return AlertDialog(
-          title: const Text("Adres ekleyin") ,
-          content: const Text('Sepeti onaylamadan önce adres bilgilerini girin')
-        );
-        });
-    }
-  else if(totalPrice == 0 )
-    {
-      showDialog(context: context, builder: (context){
+            title: const Text("Adres ekleyin"),
+            content: const Text('Sepeti onaylamadan önce adres bilgilerini girin'),
+          );
+        },
+      );
+    } else if (totalPrice == 0) {
+      showDialog(
+        context: context,
+        builder: (context) {
           return AlertDialog(
-          title: const Text("Sepete ürün ekleyin") ,
-          content: const Text('Sepete ürün ekle')
-        );
-        });
+            title: const Text("Sepete ürün ekleyin"),
+            content: const Text('Sepete ürün ekle'),
+          );
+        },
+      );
+    } else if (isLoggedIn && totalPrice > 0) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => PaymentScreen(
+            totalPrice: totalPrice,
+            products: selectedProducts.toList(),
+            cartItems: cartItems, // Sepetteki miktarları aktar
+          ),
+        ),
+      );
     }
-    else if (isLoggedIn && totalPrice > 0) {
-    
-       Navigator.push(
-          context,
-         PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => PaymentScreen(totalPrice: totalPrice,products:selectedProducts.toList())),
-            );
-                  
-    } 
-  
-  
-   
   }
 
   @override
@@ -102,10 +100,10 @@ class _CartPageState extends State<CartPage> {
           if (state is CartInitial) {
             return const Center(child: Text('Sepetiniz boş!'));
           } else if (state is CartUpdated) {
-            final cartItems = state.cartItems;
+            cartItems = state.cartItems; // cartItems'ı güncelle
             selectedProducts = state.selectedProducts;
 
-             totalPrice = selectedProducts.fold(
+            totalPrice = selectedProducts.fold(
               0.0,
               (sum, product) => sum + (product.price * cartItems[product]!),
             );
@@ -197,7 +195,7 @@ class _CartPageState extends State<CartPage> {
                                     onPressed: () {
                                       if (quantity < 5) {
                                         context.read<CartBloc>().add(
-                                              UpdateProductQuantityEvent(product, quantity + 1),
+                                             UpdateProductQuantityEvent(product.copyWith(stockAmount: 1), quantity + 1),
                                             );
                                       }
                                     },

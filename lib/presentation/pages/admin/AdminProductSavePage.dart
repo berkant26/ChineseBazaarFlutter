@@ -1,5 +1,4 @@
 
-import 'dart:typed_data';
 
 import 'package:chinese_bazaar/data/repositories/category_repository.dart';
 import 'package:chinese_bazaar/data/repositories/product_repository.dart';
@@ -11,9 +10,7 @@ import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 
-import 'package:logger/logger.dart';
 
 class ProductAddPage extends StatefulWidget {
   const ProductAddPage({super.key, this.productId, this.product,this.modalTitle,this.isProductExist});
@@ -37,10 +34,8 @@ class _ProductAddPageState extends State<ProductAddPage> {
   List<Category> _categories = [];
   List<PlatformFile> _selectedImages = [];
   List<ProductImage> _productsImages = [];
-  final List<PlatformFile> _productsImagesToBeUpdated = [];
 List<ProductImage> imagesToDelete = [];
   
-  PlatformFile? _coverPhoto;
   bool _isLoading = false;
  
    late ProductRepository productRepository = ProductRepository(ProductApi());
@@ -125,7 +120,6 @@ void deleteImagesFromServer() {
       if (result.files.length <= 5) {
         setState(() {
           _selectedImages = result.files;  // sorun çıkarsa kaldır 
-          _coverPhoto = null;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -226,8 +220,6 @@ Future<void> _updateProduct() async {
   if(_selectedImages.isNotEmpty)
   {
      
-  
-    bool imagesUploaded = await productRepository.uploadProductImages(widget.productId!, _selectedImages);
 
   }
 

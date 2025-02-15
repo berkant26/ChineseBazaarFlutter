@@ -2,7 +2,6 @@ import 'package:chinese_bazaar/data/sources/address_api.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:flutter/material.dart';
 import 'package:chinese_bazaar/data/sources/order_api.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SiparislerimPage extends StatefulWidget {
   final int? userId;
@@ -112,12 +111,14 @@ class _SiparislerimPageState extends State<SiparislerimPage> {
                       }),
                       SizedBox(height: 10,),
                       Text(' -- Alıcı iletişim Bilgileri --'),
-                     Text('Ad: ${userInfo['firstName'] ?? 'N/A'}'),
-                     Text('Soyad: ${userInfo['lastName'] ?? 'N/A'}'),
-                     Text('il: ${userInfo['city'] ?? 'N/A'}'),
-                     Text('Ilçe: ${userInfo['district'] ?? 'N/A'}'),
-                     Text('Mahalle: ${userInfo['neighborhood'] ?? 'N/A'}'),
-                     Text('Telefon: ${userInfo['phoneNumber'] ?? 'N/A'}'),
+                     Text('Ad: ${userInfo['firstName'] ?? '-'}'),
+                     Text('Soyad: ${userInfo['lastName'] ?? '-'}'),
+                     Text('il: ${userInfo['city'] ?? '-'}'),
+                     Text('Ilçe: ${userInfo['district'] ?? '-'}'),
+                     Text('Mahalle: ${userInfo['neighborhood'] ?? '-'}'),
+                     Text('Telefon: ${userInfo['phoneNumber'] ?? '-'}'),
+                     Text('Açık adres: ${userInfo['fullAddress'] ?? '-'}'),
+
                     
                     ],
                   ),

@@ -4,20 +4,23 @@ import 'package:chinese_bazaar/domain/entities/Order.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_bloc.dart';
 import 'package:chinese_bazaar/presentation/bloc/cart_event.dart';
-import 'package:chinese_bazaar/presentation/pages/home_page.dart';
-import 'package:chinese_bazaar/presentation/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PaymentScreen extends StatefulWidget {
   final double totalPrice;
   final List<Product> products;
- 
-  const PaymentScreen({super.key, required this.totalPrice, required this.products});
-  
+  final Map<Product, int> cartItems;
+
+  const PaymentScreen({
+    super.key,
+    required this.totalPrice,
+    required this.products,
+    required this.cartItems,
+  });
+
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
 }
@@ -31,91 +34,87 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final TextEditingController _cvcController = TextEditingController();
 
   bool _isProcessing = false;
- Future<int?> _getUserId() async {
+
+  Future<int?> _getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('userId');
   }
-List<OrderItem> convertProductsToOrderItems(List<Product> products) {
-  return products.map((product) {
-    return OrderItem(
-      productId: product.id,
-      quantity: product.stockAmount,
-      price: product.price,
-    );
-  }).toList();
-}
-  void _processPayment() async{
+
+  // Sepetteki ürünleri OrderItem listesine dönüştür
+  List<OrderItem> convertProductsToOrderItems(List<Product> products) {
+    return products.map((product) {
+      // Sepetteki miktarı cartItems map'inden al
+      final quantity = widget.cartItems[product] ?? 1; // Varsayılan değer 1
+      return OrderItem(
+        productId: product.id,
+        quantity: quantity, // Sepetteki miktarı kullan
+        price: product.price,
+      );
+    }).toList();
+  }
+
+  void _processPayment() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isProcessing = true);
       var api = PaymentApi();
       final paymentRequest = {
-
-        "price" : widget.totalPrice,
-        'cardHolderName' : _cardHolderController.text,
-        'cardNumber':_cardNumberController.text,
-        'expireMonth':_expireMonthController.text,
+        "price": widget.totalPrice,
+        'cardHolderName': _cardHolderController.text,
+        'cardNumber': _cardNumberController.text,
+        'expireMonth': _expireMonthController.text,
         'expireYear': _expireYearController.text,
-        'cvc' : _cvcController.text
-
+        'cvc': _cvcController.text,
       };
-      var log =  Logger();
       var paymentResult = await api.Pay(paymentRequest);
-      if(paymentResult.success)
-      {
-         var addOrder = OrderApi();
-         var orderItems = convertProductsToOrderItems(widget.products);
-         OrderRequestDto orderRequestDto = OrderRequestDto(
-        order: Order(
-          id: 0, // or the appropriate ID
-          userId: await _getUserId(), // replace with actual user ID
-          totalPrice: widget.totalPrice,
-          userAddressId:await _getUserId() ,
-          orderDate: null,
-          paymentStatus: true, // or false based on payment result
+      if (paymentResult.success) {
+        var addOrder = OrderApi();
+        var orderItems = convertProductsToOrderItems(widget.products);
+        OrderRequestDto orderRequestDto = OrderRequestDto(
+          order: Order(
+            id: 0, // or the appropriate ID
+            userId: await _getUserId(), // replace with actual user ID
+            totalPrice: widget.totalPrice,
+            userAddressId: await _getUserId(),
+            orderDate: null,
+            paymentStatus: true, // or false based on payment result
+            orderItems: orderItems,
+          ),
           orderItems: orderItems,
-        ),
-        orderItems: orderItems,
+        );
+        await addOrder.addOrder(orderRequestDto);
 
-      );
-       await  addOrder.addOrder(orderRequestDto);
-        
-      context.read<CartBloc>().add(ClearCartEvent());
+        context.read<CartBloc>().add(ClearCartEvent());
 
-          showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Column(
-              children: [
-                
-                
-                // Optional logo
-                Icon(Icons.check_circle, color: Colors.green, size: 40), 
-                SizedBox(height: 10),
-                Text(
-                  "SİPARİŞİNİZ OLUŞTURULDU", 
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Column(
+                children: [
+                  // Optional logo
+                  Icon(Icons.check_circle, color: Colors.green, size: 40),
+                  SizedBox(height: 10),
+                  Text(
+                    "SİPARİŞİNİZ OLUŞTURULDU",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ],
+              ),
+              content: Text("Hesabım > Siparişlerim 'den kontrol edebilirsiniz."),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Tamam"),
                 ),
               ],
-            ),
-            content: Text("Hesabım > Siparişlerim 'den kontrol edebilirsiniz."),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text("Tamam"),
-              ),
-            ],
-          );
-        },
-      );            
-                  Navigator.of(context).pop();
-
-      }
-      else{
-
-     
+            );
+          },
+        );
+        Navigator.of(context).pop();
+      } else {
+        // Handle payment failure
       }
       Future.delayed(const Duration(seconds: 2), () {
         setState(() => _isProcessing = false);
@@ -140,13 +139,16 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
               children: [
                 Text(
                   "Toplam Tutar : ${widget.totalPrice.toStringAsFixed(2)} TL",
-                  style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.05, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.05,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _cardHolderController,
                   decoration: const InputDecoration(labelText: "Kart sahibi"),
-                  validator: (value) => (value == null || value.isEmpty) ? "bu alan zorunludur" : null,
+                  validator: (value) =>
+                      (value == null || value.isEmpty) ? "bu alan zorunludur" : null,
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -157,7 +159,8 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(16),
                   ],
-                  validator: (value) => (value != null && value.length == 16) ? null : "Geçersiz Kart",
+                  validator: (value) =>
+                      (value != null && value.length == 16) ? null : "Geçersiz Kart",
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -208,14 +211,17 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(3),
                   ],
-                  validator: (value) => (value != null && value.length == 3) ? null : "bu alan zorunludur",
+                  validator: (value) =>
+                      (value != null && value.length == 3) ? null : "bu alan zorunludur",
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isProcessing ? null : _processPayment,
-                    child: _isProcessing ? const CircularProgressIndicator(color: Colors.white) : const Text("Onayla ve Bitir"),
+                    child: _isProcessing
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Onayla ve Bitir"),
                   ),
                 ),
               ],
@@ -226,3 +232,4 @@ List<OrderItem> convertProductsToOrderItems(List<Product> products) {
     );
   }
 }
+

@@ -120,7 +120,7 @@ class _UserAddressState extends State<UserAddress> {
 
       // Navigate to AddressDisplayPage and replace the current page
        Navigator.pop(context);
-
+      setState(() {});
       // Ensure no further execution after navigation
   
     } catch (e) {

@@ -3,7 +3,6 @@ import 'package:chinese_bazaar/data/sources/product_api.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/presentation/pages/admin/AdminProductSavePage.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 class AdminProductListPage extends StatefulWidget {
   const AdminProductListPage({super.key});
