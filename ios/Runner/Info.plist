@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Chinese Bazaar</string>
+	<string>Çin Pazarı</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,8 +26,14 @@
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+
+	<!-- Photo Library Usage Description -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to pick files.</string>
+
+	<!-- Camera Usage Description (for gallery) -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera for taking photos.</string>
 
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
@@ -48,14 +54,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- App Transport Security -->
 	<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-    <key>NSExceptionDomains</key>
-    <dict>
-        
-    </dict>
-</dict>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/> <!-- Tüm HTTP bağlantılarına izin verir. -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>example.com</key> <!-- İzin verilen özel domain -->
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/> <!-- HTTP bağlantılarına izin verir -->
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>
