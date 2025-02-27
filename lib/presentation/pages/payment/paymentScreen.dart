@@ -138,7 +138,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Toplam Tutar : ${widget.totalPrice.toStringAsFixed(2)} TL",
+                  "Toplam Tutar : ${widget.totalPrice.toStringAsFixed(0)} TL",
                   style: TextStyle(
                       fontSize: MediaQuery.of(context).size.width * 0.05,
                       fontWeight: FontWeight.bold),

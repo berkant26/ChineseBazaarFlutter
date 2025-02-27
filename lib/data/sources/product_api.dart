@@ -5,9 +5,10 @@ import 'package:chinese_bazaar/Core/Services/connectionUrl.dart';
 import 'package:chinese_bazaar/data/sources/login_api.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 
 
 class ProductAddResult{
@@ -27,8 +28,8 @@ class ProductApi {
   late String deleteProductImagesUrl = Connectionurl.deleteProductImagesApi;
   late String fetchProductCategoryByIdUrl = Connectionurl.fetchProductCategoryByIdApi;
    late String deleteProductUrl = Connectionurl.deleteProductApi;
-  var baseImgUrl = 'http://192.168.18.199:5000/';
-  
+  var baseImgUrl = Connectionurl.baseImgUrl;
+
 
 
 Future<ProductAddResult> addProduct(Product product) async {
@@ -52,10 +53,8 @@ Future<ProductAddResult> addProduct(Product product) async {
     // **Set request body**
     request.write(jsonEncode(product.toJson()));
 
-    // **Send request and get response**
     final response = await request.close();
 
-    // **Read response body**
     final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode >= 200 && response.statusCode <= 299) {
@@ -69,10 +68,7 @@ Future<ProductAddResult> addProduct(Product product) async {
     return ProductAddResult(success: false);
   }
 }
-Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImages) async {
-
-
-
+Future<bool> uploadProductImages(int productId, List<XFile> selectedImages) async {
   final uri = Uri.parse(uploadProductImagesUrl);
   var request = http.MultipartRequest('POST', uri);
 
@@ -82,38 +78,36 @@ Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImage
     "Content-Type": "multipart/form-data",
   });
 
-  // **Doğru field ismiyle productId ekle**
+  // **Doğru field ismiyle productId ekle**  
   request.fields['productId'] = productId.toString();
 
   const int maxFileSize = 5 * 1024 * 1024; // 5 MB
 
   for (var file in selectedImages) {
-    if (file.size > maxFileSize) {
-      continue;
+    int fileSize = await File(file.path).length(); // ✅ Doğru dosya boyutu kontrolü
+
+    if (fileSize > maxFileSize) {
+      continue; // Büyük dosyaları atla
     }
 
-    if (file.path != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'images', // **Doğru key**
-        file.path!,
-      ));
-    } else if (file.bytes != null) {
-      request.files.add(http.MultipartFile.fromBytes(
-        'images', // **Doğru key**
-        file.bytes!,
-        filename: file.name,
-      ));
-    }
+    request.files.add(await http.MultipartFile.fromPath(
+      'images', // **Doğru key**
+      file.path,
+    ));
   }
 
-  var response = await request.send();
+  try {
+    var response = await request.send();
 
-  if (response.statusCode == 200) {
-    return true;
-  } else {
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
     return false;
   }
-  } 
+}
   
 Future<ProductAddResult> updateProduct(int productId, Product product) async {
   
@@ -155,12 +149,8 @@ final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
   }
 }
 
-Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImages) async {
-  
-  // final String updateProductImagesApi = Connectionurl.updateProductImagesApi+"/$productId";
-
-final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$productId";
-
+Future<bool> updateProductImages(int productId, List<XFile> selectedImages) async {
+  final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$productId";
   final uri = Uri.parse(updateProductImagesApi);
   var request = http.MultipartRequest('PUT', uri);
 
@@ -172,29 +162,22 @@ final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$
   const int maxFileSize = 5 * 1024 * 1024; // 5 MB
 
   for (var file in selectedImages) {
-    if (file.size > maxFileSize) {
-      continue;
+    int fileSize = await File(file.path).length(); // ✅ Doğru dosya boyutu kontrolü
+
+    if (fileSize > maxFileSize) {
+      continue; // Büyük dosyaları atla
     }
 
-    if (file.path != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'images',
-        file.path!,
-      ));
-    } else if (file.bytes != null) {
-      request.files.add(http.MultipartFile.fromBytes(
-        'images',
-        file.bytes!,
-        filename: file.name,
-      ));
-    }
+    request.files.add(await http.MultipartFile.fromPath(
+      'images', // **Doğru key**
+      file.path,
+    ));
   }
 
-  var response = await request.send();
-
-  if (response.statusCode == 200) {
-    return true;
-  } else {
+  try {
+    var response = await request.send();
+    return response.statusCode == 200;
+  } catch (e) {
     return false;
   }
 }
@@ -203,6 +186,7 @@ final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$
 Future<List<ProductImage>> fetchProductsImages(int productId) async {
  
     final url = "$fetchProductImagesUrl$productId";
+    Logger log = Logger();
  try {
       // Create an HTTP client that ignores certificate errors
       final ioc = HttpClient();
@@ -224,7 +208,7 @@ Future<List<ProductImage>> fetchProductsImages(int productId) async {
           return ProductImage(
             id: productImage['id'] ?? 0, // Default to 0 if 'id' is null
             productId: productImage['productId']  ?? 0.0, // Default to 0.0 if 'price' is null
-            imageUrl: baseImgUrl + productImage['imageUrl'], // Default to an empty string if 'imageUrl' is null
+            imageUrl: productImage['imageUrl'], // Default to an empty string if 'imageUrl' is null
           );
         }).toList();
       } else {

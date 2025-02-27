@@ -7,9 +7,11 @@ import 'package:chinese_bazaar/data/sources/product_api.dart';
 import 'package:chinese_bazaar/domain/entities/category.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 
 
 class ProductAddPage extends StatefulWidget {
@@ -32,7 +34,7 @@ class _ProductAddPageState extends State<ProductAddPage> {
   int? _selectedCategoryId;
   
   List<Category> _categories = [];
-  List<PlatformFile> _selectedImages = [];
+  List<XFile> _selectedImages = [];
   List<ProductImage> _productsImages = [];
 List<ProductImage> imagesToDelete = [];
   
@@ -108,31 +110,38 @@ void deleteImagesFromServer() {
       setState(() => _isLoading = false);
     }
   }
-  Future<void> _pickImages() async {
-  try {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: true,
-      withData: true, // Includes file bytes in the result
-    );
 
-    if (result != null && result.files.isNotEmpty) {
-      if (result.files.length <= 5) {
-        setState(() {
-          _selectedImages = result.files;  // sorun çıkarsa kaldır 
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can only upload up to 5 photos.')),
-        );
-      }
+Future<void> _pickImages() async {
+  final ImagePicker picker = ImagePicker();
+
+  try {
+    final List<XFile>? pickedImages = await picker.pickMultiImage();
+
+    if (pickedImages == null || pickedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lütfen en az bir resim seçin.")),
+      );
+      return;
     }
+
+    // En fazla 5 resim seçilmesine izin ver
+    if (pickedImages.length > 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('En fazla 5 resim yükleyebilirsin.')),
+      );
+    }
+
+    setState(() {
+      _selectedImages = pickedImages.take(5).toList(); // İlk 5 resmi al
+    });
+
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to pick images: $e')),
+      SnackBar(content: Text('Hata oluştu: $e')),
     );
   }
 }
+
   Future<void> _addProduct() async {
 
    
@@ -149,6 +158,8 @@ void deleteImagesFromServer() {
 
 
    var successProduct = await productRepository.addProduct(product);
+   Logger log = new Logger();
+   log.e('API Response: ${successProduct.toString()}');
    var successProductImage = await productRepository.uploadProductImages(successProduct.productId!, _selectedImages);
 if (successProduct.success && successProductImage) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -226,12 +237,12 @@ Future<void> _updateProduct() async {
   if (productUpdated.success) {
   
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product updated successfully!')),
+      const SnackBar(content: Text('Ürün güncellendi!')),
     );
     Navigator.pop(context);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Failed to update product.')),
+      const SnackBar(content: Text('Ürün güncellerken hata oluştu.')),
     );
   }
 }
@@ -245,7 +256,7 @@ Future<void> _updateProduct() async {
     final isLargeScreen = screenWidth > 600; // Adjust based on your screen width preference
 
     return Scaffold(
-      appBar: AppBar(title:  Text(widget.modalTitle!)),
+      appBar: AppBar(title:  Text(widget.modalTitle ?? 'Ürün Ekle')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -370,7 +381,7 @@ Future<void> _updateProduct() async {
               alignment: Alignment.topRight,
               children: [
                 Image.file(
-                  File(image.path!),
+                  File(image.path),
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,

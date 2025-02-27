@@ -27,7 +27,7 @@ class ProductListPage extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products found'));
+            return const Center(child: Text('Çok Yakında'));
           }
           final products = snapshot.data!;
 
@@ -48,7 +48,7 @@ class ProductListPage extends StatelessWidget {
                   } else if (imageSnapshot.hasError) {
                     return Center(child: Text('Error: ${imageSnapshot.error}'));
                   } else if (!imageSnapshot.hasData || imageSnapshot.data!.isEmpty) {
-                    return const Center(child: Text('No images available'));
+                    return const Center(child: Text(''));
                   }
                   final images = imageSnapshot.data!;
                   return ProductCard(

@@ -35,6 +35,7 @@
   static late String deleteProductImagesApi;
   static late String fetchProductCategoryByIdApi;
   static late String deleteProductApi;
+  static late String baseImgUrl;
 
   static void init({required String baseUrl}) {
     connectionUrl = baseUrl;
@@ -52,6 +53,7 @@
     deleteProductImagesApi = "$connectionUrl/Products/deleteProductImage";
     fetchProductCategoryByIdApi = "$connectionUrl/Products/getlistbycategoryId?categoryId=";
     deleteProductApi = "$connectionUrl/Products/delete";
+    baseImgUrl = "http://16.16.65.136:5000/";
   }
 }
 

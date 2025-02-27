@@ -15,7 +15,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'presentation/pages/home_page.dart';
 void main() {
-  Connectionurl.init(baseUrl: "https://192.168.18.199:5001/api");
+  Connectionurl.init(baseUrl: "http://16.16.65.136:5000/api");
+  //Connectionurl.init(baseUrl: "http://192.168.18.199:5000/api");
+
   AuthApi().initialize(); 
   HttpOverrides.global = MyHttpOverrides();
   runApp(
@@ -30,7 +32,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appTitle = 'Chinese Bazaar';
+    var appTitle = 'Çin Pazarı';
 
     return MaterialApp(
       title: appTitle,

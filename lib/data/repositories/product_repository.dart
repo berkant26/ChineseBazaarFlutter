@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:chinese_bazaar/domain/entities/productImage.dart';
 import 'package:chinese_bazaar/domain/entities/product.dart';
 import 'package:chinese_bazaar/domain/repositories/product_repository_interface.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../sources/product_api.dart';
 
@@ -46,7 +46,7 @@ class ProductRepository implements ProductRepositoryInterface {
   }
   
   @override
-  Future<bool> uploadProductImages(int productId, List<PlatformFile> selectedImages) {
+  Future<bool> uploadProductImages(int productId, List<XFile> selectedImages) {
     return ProductApi().uploadProductImages(productId, selectedImages);
   }
   
@@ -57,7 +57,7 @@ class ProductRepository implements ProductRepositoryInterface {
   }
   
   @override
-  Future<bool> updateProductImages(int productId, List<PlatformFile> selectedImages) {
+  Future<bool> updateProductImages(int productId, List<XFile> selectedImages) {
     return ProductApi().updateProductImages(productId, selectedImages);
 
   }

@@ -167,7 +167,7 @@ class _CartPageState extends State<CartPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      "${productTotalPrice.toStringAsFixed(2)} TL",
+                                      "${productTotalPrice.toStringAsFixed(0)} TL",
                                       style: const TextStyle(
                                         color: Colors.green,
                                         fontWeight: FontWeight.bold,
@@ -195,7 +195,7 @@ class _CartPageState extends State<CartPage> {
                                     onPressed: () {
                                       if (quantity < 5) {
                                         context.read<CartBloc>().add(
-                                             UpdateProductQuantityEvent(product.copyWith(stockAmount: 1), quantity + 1),
+                                             UpdateProductQuantityEvent(product, quantity + 1),
                                             );
                                       }
                                     },
@@ -219,7 +219,7 @@ class _CartPageState extends State<CartPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Toplam: ${totalPrice.toStringAsFixed(2)}TL',
+                            'Toplam: ${totalPrice.toStringAsFixed(0)} TL',
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           ElevatedButton(
