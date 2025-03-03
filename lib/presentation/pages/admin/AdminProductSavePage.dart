@@ -115,9 +115,9 @@ Future<void> _pickImages() async {
   final ImagePicker picker = ImagePicker();
 
   try {
-    final List<XFile>? pickedImages = await picker.pickMultiImage();
+    final List<XFile> pickedImages = await picker.pickMultiImage();
 
-    if (pickedImages == null || pickedImages.isEmpty) {
+    if (pickedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Lütfen en az bir resim seçin.")),
       );
@@ -158,7 +158,7 @@ Future<void> _pickImages() async {
 
 
    var successProduct = await productRepository.addProduct(product);
-   Logger log = new Logger();
+   Logger log = Logger();
    log.e('API Response: ${successProduct.toString()}');
    var successProductImage = await productRepository.uploadProductImages(successProduct.productId!, _selectedImages);
 if (successProduct.success && successProductImage) {
@@ -222,7 +222,8 @@ Future<void> _updateProduct() async {
     description: _descriptionController.text,
     imageUrl: "", // Image will be handled separately
   );
-
+  Logger d = new Logger();
+  d.e(updatedProduct.toJson());
   var productUpdated = await productRepository.updateProduct(updatedProduct, widget.productId!);
    if(imagesToDelete.isNotEmpty){
 
@@ -242,7 +243,7 @@ Future<void> _updateProduct() async {
     Navigator.pop(context);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ürün güncellerken hata oluştu.')),
+      const SnackBar(content: Text('Ürünü güncellerken hata oluştu.')),
     );
   }
 }

@@ -110,16 +110,13 @@ Future<bool> uploadProductImages(int productId, List<XFile> selectedImages) asyn
 }
   
 Future<ProductAddResult> updateProduct(int productId, Product product) async {
-  
+  final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
 
-    // productUpdateUrl = productUpdateUrl+"/$productId";
-final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
   try {
     final token = await AuthApi.getToken();
     if (token == null) {
       return ProductAddResult(success: false);
     }
-
 
     final httpClient = HttpClient();
     httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
@@ -127,9 +124,12 @@ final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
     final request = await httpClient.putUrl(Uri.parse(productUpdateUrlWithId));
 
     request.headers.set('Authorization', 'Bearer $token', preserveHeaderCase: true);
-    request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=utf-8");
 
-    request.write(jsonEncode(product.toJson()));
+    // Türkçe karakterleri doğru şekilde encode et
+    final jsonData = utf8.encode(jsonEncode(product.toJson()));
+
+    request.add(jsonData); // Burada add kullanıyoruz, write yerine.
 
     final response = await request.close();
     final responseBody = await response.transform(utf8.decoder).join();
@@ -137,17 +137,15 @@ final String productUpdateUrlWithId = "$productUpdateUrl/$productId";
     if (response.statusCode >= 200 && response.statusCode <= 299) {
       final Map<String, dynamic> responseData = jsonDecode(responseBody);
       final productId = responseData['productId'];
-            return ProductAddResult(success: true, productId: productId);
-
+      return ProductAddResult(success: true, productId: productId);
     } else {
-            return ProductAddResult(success: false);
-
+      return ProductAddResult(success: false);
     }
   } catch (e) {
-          return ProductAddResult(success: false);
-
+    return ProductAddResult(success: false);
   }
 }
+
 
 Future<bool> updateProductImages(int productId, List<XFile> selectedImages) async {
   final String updateProductImagesApi = "${Connectionurl.updateProductImagesApi}/$productId";

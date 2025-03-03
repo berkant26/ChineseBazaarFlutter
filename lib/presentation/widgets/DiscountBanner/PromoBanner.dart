@@ -25,7 +25,7 @@ class PromoBanner extends StatelessWidget {
               duration: const Duration(seconds: 5),
               infinite: true,
               child: Text(
-                'Açılışa Özel Tüm Ürünlerde %20 İndirim!',
+                'Aksesuarlarda %20 İndirim ! ',
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.bold,
